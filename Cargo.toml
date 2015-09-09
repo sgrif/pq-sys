@@ -1,0 +1,10 @@
+[package]
+name = "pq-sys"
+version = "0.1.0"
+authors = ["Sean Griffin <sean@thoughtbot.com>"]
+
+[lib]
+name = "pq_sys"
+
+[dependencies]
+libc = "0.1.*"

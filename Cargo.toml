@@ -1,10 +1,12 @@
 [package]
 name = "pq-sys"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Sean Griffin <sean@seantheprogrammer.com>"]
 description = "Auto-generated rust bindings for libpq"
 license = "MIT"
 repository = "https://github.com/sgrif/pq-sys"
+links = "pq"
+build = "build.rs"
 
 [lib]
 name = "pq_sys"

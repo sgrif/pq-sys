@@ -9,3 +9,14 @@ Building
 This repository contains direct, one-to-one mappings to the C functions provided
 in `libpq-fe.h` and `postgres_ext.h`. This library expects that libpq be
 installed on the system.
+
+You may need to specify the environment variable `LIB_PQ_DIR` to the location of
+your postgresql lib directory if the build fails.
+
+For OSX 10.11 you can use brew to install postgresql and then set the
+environment variable as described below:
+
+```
+brew install openssl
+export PQ_LIB_DIR=`brew --prefix postgresql`/lib
+```

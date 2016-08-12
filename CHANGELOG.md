@@ -3,6 +3,16 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.2.3] 2016-08-12
+
+### Changed
+
+- On Mac if `pg_config` points to a directory where `libpq.dylib` is a symlink,
+  we will now attempt to find the canonical directory to link against. This
+  means that for installations using homebrew,
+  `/usr/local/Cellar/postgresql/version/lib` will be added to `DYLD_LIBRARY_PATH`
+  instead of `/usr/local/lib`
+
 ## [0.2.2] 2016-07-30
 
 ### Added

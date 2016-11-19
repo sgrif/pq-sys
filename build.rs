@@ -10,6 +10,15 @@ fn main() {
         let path = follow_dylib_symlinks(path.trim().into());
         println!("cargo:rustc-link-search=native={}", &path.display());
     }
+
+    let mode = if env::var_os("PQ_LIB_STATIC").is_some() {
+        "static"
+    } else {
+        "dylib"
+    };
+    let lib = "pq";
+    
+    println!("cargo:rustc-link-lib={}={}", mode, lib);
 }
 
 fn pg_config_output() -> Option<String> {

@@ -13,6 +13,9 @@ installed on the system.
 You may need to specify the environment variable `LIB_PQ_DIR` to the location of
 your postgresql lib directory if the build fails.
 
+The build script instructs Cargo to link the library statically if the environmental
+variable `LIB_PQ_STATIC` is set. This can be useful, if targeting for a musl target.
+
 For OSX 10.11 you can use brew to install postgresql and then set the
 environment variable as described below:
 

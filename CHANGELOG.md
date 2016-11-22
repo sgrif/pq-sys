@@ -3,6 +3,11 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.2.4] 2016-11-22
+
+- `pq` will be statically linked if the environment variable `PQ_LIB_STATIC` is
+  set.
+
 ## [0.2.3] 2016-08-12
 
 ### Changed

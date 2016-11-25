@@ -15,7 +15,11 @@ fn main() {
     } else {
         "dylib"
     };
-    let lib = "pq";
+    let lib = if cfg!(target_os = "windows") {
+        "libpq"
+    } else {
+        "pq"
+    };
     
     println!("cargo:rustc-link-lib={}={}", mode, lib);
 }

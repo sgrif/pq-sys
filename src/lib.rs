@@ -178,7 +178,7 @@ impl ::std::default::Default for Struct_pgresAttDesc {
 pub type PGresAttDesc = Struct_pgresAttDesc;
 pub type pgthreadlock_t =
     ::std::option::Option<extern "C" fn(acquire: ::libc::c_int) -> ()>;
-#[link(name = "pq")]
+
 extern "C" {
     pub fn PQconnectStart(conninfo: *const ::libc::c_char) -> *mut PGconn;
     pub fn PQconnectStartParams(keywords: *const *const ::libc::c_char,

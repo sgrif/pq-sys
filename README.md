@@ -10,11 +10,20 @@ This repository contains direct, one-to-one mappings to the C functions provided
 in `libpq-fe.h` and `postgres_ext.h`. This library expects that libpq be
 installed on the system.
 
-You may need to specify the environment variable `LIB_PQ_DIR` to the location of
-your postgresql lib directory if the build fails.
+The build script of crate will attempt to find the lib path of libpq using the
+following methods:
+
+* First, if the environment variable `LIB_PQ_DIR` is set, it will use its value
+* If the environment variable isn't set, it tries to use pkg-config to locate it.
+All the config options, such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC`
+etc., of the crate [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)
+apply.
+* If it still can't locate the library, it will invoke the Postgres command
+`pg_config --libdir`
 
 The build script instructs Cargo to link the library statically if the environmental
 variable `LIB_PQ_STATIC` is set. This can be useful, if targeting for a musl target.
+If pkg-config is being used, it's configuration options will apply.
 
 For OSX 10.11 you can use brew to install postgresql and then set the
 environment variable as described below:

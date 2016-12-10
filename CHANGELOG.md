@@ -3,7 +3,16 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.2.5] 2016-12-10
+
+### Added
+
+- We will attempt to use `pkg-config` to locate libpq before falling back to
+  `pg_config`.
+
 ## [0.2.4] 2016-11-22
+
+### Added
 
 - `pq` will be statically linked if the environment variable `PQ_LIB_STATIC` is
   set.

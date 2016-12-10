@@ -3,6 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.2.7] 2016-12-10
+
+### Changed
+
+- `pkg_config` is disabled by default. It can be enabled by adding `features =
+  ["pkg_config"]` to your `Cargo.toml`.
+
 ## [0.2.6] 2016-12-10
 
 ### Added

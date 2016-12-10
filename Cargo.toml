@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.2.6"
+version = "0.2.7"
 authors = ["Sean Griffin <sean@seantheprogrammer.com>"]
 description = "Auto-generated rust bindings for libpq"
 license = "MIT"
@@ -12,7 +12,7 @@ build = "build.rs"
 name = "pq_sys"
 
 [build-dependencies]
-pkg-config = "~0.3"
+pkg-config = { version = "0.3.0", optional = true }
 
 [dependencies]
 libc = "0.2.*"

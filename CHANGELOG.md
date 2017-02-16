@@ -3,12 +3,24 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.3.0] 2017-02-16
+
+### Changed
+
+- Bindings are now generated when the library is built, rather than being
+  vendored ahead of time.
+
+- `libc` is no longer used. Anywhere that `libc::some_type` was expected,
+  `std::os::raw::some_type` is now used instead.
+
+- The build script will no longer attempt to canonicalize symlinks on MacOS.
+
 ## [0.2.7] 2016-12-10
 
 ### Changed
 
-- `pkg_config` is disabled by default. It can be enabled by adding `features =
-  ["pkg_config"]` to your `Cargo.toml`.
+- `pkg-config` is disabled by default. It can be enabled by adding `features =
+  ["pkg-config"]` to your `Cargo.toml`.
 
 ## [0.2.6] 2016-12-10
 

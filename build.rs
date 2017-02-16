@@ -17,9 +17,8 @@ fn main() {
     } else if configured_by_pkg_config() {
         return // pkg_config does everything for us, including output for cargo
     } else if let Some(path) = pg_config_output("--libdir") {
-        if !(cfg!(target_os = "macos") && path == "/usr/local/lib") {
-            println!("cargo:rustc-link-search=native={}", path);
-        }
+        let path = replace_homebrew_path_on_mac(path);
+        println!("cargo:rustc-link-search=native={}", path);
     }
 
     let mode = if env::var_os("PQ_LIB_STATIC").is_some() {
@@ -67,4 +66,28 @@ fn generate_bindgen_file() {
         .expect("Unable to generate bindings for libpq")
         .write_to_file(PathBuf::from(out_dir).join("bindings.rs"))
         .expect("Unable to write bindings to file");
+}
+
+#[cfg(not(target_os = "macos"))]
+fn replace_homebrew_path_on_mac(path: String) -> String {
+    path
+}
+
+#[cfg(target_os = "macos")]
+fn replace_homebrew_path_on_mac(path: String) -> String {
+    if path == "/usr/local/lib" {
+        Command::new("brew")
+            .arg("--prefix")
+            .arg("postgres")
+            .output()
+            .ok()
+            .into_iter()
+            .filter(|output| output.status.success())
+            .flat_map(|output| String::from_utf8(output.stdout).ok())
+            .map(|output| format!("{}/lib", output.trim()))
+            .next()
+            .unwrap_or(path)
+    } else {
+        path
+    }
 }

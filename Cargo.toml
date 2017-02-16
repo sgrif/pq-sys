@@ -12,7 +12,5 @@ build = "build.rs"
 name = "pq_sys"
 
 [build-dependencies]
+bindgen = "0.22.0"
 pkg-config = { version = "0.3.0", optional = true }
-
-[dependencies]
-libc = "0.2.*"

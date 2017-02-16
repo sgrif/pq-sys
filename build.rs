@@ -17,7 +17,7 @@ fn main() {
     } else if configured_by_pkg_config() {
         return // pkg_config does everything for us, including output for cargo
     } else if let Some(path) = pg_config_output("--libdir") {
-        if !(cfg!(macos) && path == "/usr/local/lib") {
+        if !(cfg!(target_os = "macos") && path == "/usr/local/lib") {
             println!("cargo:rustc-link-search=native={}", path);
         }
     }
@@ -49,6 +49,7 @@ fn pg_config_output(command: &str) -> Option<String> {
         .into_iter()
         .filter(|output| output.status.success())
         .flat_map(|output| String::from_utf8(output.stdout).ok())
+        .map(|output| output.trim().to_string())
         .next()
 }
 

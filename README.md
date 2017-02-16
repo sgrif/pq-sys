@@ -25,10 +25,21 @@ The build script instructs Cargo to link the library statically if the environme
 variable `LIB_PQ_STATIC` is set. This can be useful, if targeting for a musl target.
 If pkg-config is being used, it's configuration options will apply.
 
-For OSX 10.11 you can use brew to install postgresql and then set the
-environment variable as described below:
+## FAQ
 
-```
-brew install openssl
-export PQ_LIB_DIR=`brew --prefix postgresql`/lib
-```
+### I'm seeing `dyld: Symbol not found __cg_jpeg_resync_to_restart` on macOS
+
+This is caused when the output of `pg_config --libdir` is a directory that also
+contains `libjpeg.dylib` which differs from the system libjpeg. This is usually
+caused by install postgres via homebrew, or using postgresapp.com.
+
+If you've installed via homebrew, you should not see this issue unless you've
+provided `features = ["pkg-config"]`. You can work around the issue by exporting
+`PQ_LIB_DIR="$(brew --prefix postgres)/lib"`.
+
+If you've installed postgresql using postgresapp.com, you will not be able to
+run your binaries using `cargo run` or `cargo test`. You can compile the binary
+manually via `cargo build` and then run `/target/debug/yourapp`. You can also
+manually create a directory that contains only a symlink to `libpq.dylib` and
+nothing else, then export `PQ_LIB_DIR` to that directory. It is recommended that
+you do not use postgresapp.com.

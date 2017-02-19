@@ -14,16 +14,12 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", path);
     }
 
-    let mode = if env::var_os("PQ_LIB_STATIC").is_some() {
-        "=static"
-    } else {
-        ""
-    };
-
     if cfg!(all(windows, target_env="msvc")) {
         println!("cargo:rustc-link-lib=static=libpq");
+    } else if env::var_os("PQ_LIB_STATIC").is_some() {
+        println!("cargo:rustc-link-lib=static=pq");
     } else {
-        println!("cargo:rustc-link-lib{}=pq", mode);
+        println!("cargo:rustc-link-lib=pq");
     }
 }
 

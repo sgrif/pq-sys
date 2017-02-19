@@ -5,8 +5,6 @@ use std::process::Command;
 use std::env;
 
 fn main() {
-    let link_flag = "pq";
-
     if let Ok(lib_dir) = env::var("PQ_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     } else if configured_by_pkg_config() {
@@ -17,12 +15,16 @@ fn main() {
     }
 
     let mode = if env::var_os("PQ_LIB_STATIC").is_some() {
-        "static"
+        "=static"
     } else {
-        "dylib"
+        ""
     };
 
-    println!("cargo:rustc-link-lib={}={}", mode, link_flag);
+    if cfg!(all(windows, target_env="msvc")) {
+        println!("cargo:rustc-link-lib=static=libpq");
+    } else {
+        println!("cargo:rustc-link-lib{}=pq", mode);
+    }
 }
 
 #[cfg(feature = "pkg-config")]

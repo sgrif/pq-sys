@@ -3,6 +3,14 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.0] 2017-02-18
+
+### Changed
+
+- Bindings are no longer generated at compile time. Requiring clang 3.9 caused
+  too many issues for too many users, and requiring `syntex_syntax` increased
+  compile time too much.
+
 ## [0.3.2] 2017-02-16
 
 ### Fixed

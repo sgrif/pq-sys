@@ -15,7 +15,7 @@ fn main() {
     }
 
     if cfg!(all(windows, target_env="msvc")) {
-        println!("cargo:rustc-link-lib=static=libpq");
+        println!("cargo:rustc-link-lib=dylib=libpq");
     } else if env::var_os("PQ_LIB_STATIC").is_some() {
         println!("cargo:rustc-link-lib=static=pq");
     } else {

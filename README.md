@@ -22,7 +22,7 @@ apply.
 `pg_config --libdir`
 
 The build script instructs Cargo to link the library statically if the environmental
-variable `LIB_PQ_STATIC` is set. This can be useful, if targeting for a musl target.
+variable `PQ_LIB_STATIC` is set. This can be useful, if targeting for a musl target.
 If pkg-config is being used, it's configuration options will apply.
 
 ## FAQ

@@ -1,6 +1,9 @@
 #[cfg(feature="pkg-config")]
 extern crate pkg_config;
 
+#[cfg(target_env = "msvc")]
+extern crate vcpkg;
+
 use std::process::Command;
 use std::env;
 
@@ -9,6 +12,8 @@ fn main() {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     } else if configured_by_pkg_config() {
         return // pkg_config does everything for us, including output for cargo
+    } else if configured_by_vcpkg() {
+        return // vcpkg does everything for us, including output for cargo
     } else if let Some(path) = pg_config_output("--libdir") {
         let path = replace_homebrew_path_on_mac(path);
         println!("cargo:rustc-link-search=native={}", path);
@@ -30,6 +35,29 @@ fn configured_by_pkg_config() -> bool {
 
 #[cfg(not(feature = "pkg-config"))]
 fn configured_by_pkg_config() -> bool {
+    false
+}
+
+#[cfg(target_env = "msvc")]
+fn configured_by_vcpkg() -> bool {
+    vcpkg::probe_package("libpq").map(|_| {
+
+        // found libpq which depends on openssl and zlib
+        vcpkg::Config::new()
+            .lib_name("libeay32")
+            .lib_name("ssleay32")
+            .probe("openssl").expect("configured libpq from vcpkg but could not \
+                                        find openssl libraries that it depends on");
+
+        println!("cargo:rustc-link-lib=crypt32");
+        println!("cargo:rustc-link-lib=gdi32");
+        println!("cargo:rustc-link-lib=user32");
+        println!("cargo:rustc-link-lib=secur32");
+    }).is_ok()
+}
+
+#[cfg(not(target_env = "msvc"))]
+fn configured_by_vcpkg() -> bool {
     false
 }
 

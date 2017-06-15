@@ -42,12 +42,11 @@ fn configured_by_pkg_config() -> bool {
 fn configured_by_vcpkg() -> bool {
     vcpkg::probe_package("libpq").map(|_| {
 
-        // found libpq which depends on openssl and zlib
+        // found libpq which depends on openssl
         vcpkg::Config::new()
             .lib_name("libeay32")
             .lib_name("ssleay32")
-            .probe("openssl").expect("configured libpq from vcpkg but could not \
-                                        find openssl libraries that it depends on");
+            .probe("openssl").ok();
 
         println!("cargo:rustc-link-lib=crypt32");
         println!("cargo:rustc-link-lib=gdi32");

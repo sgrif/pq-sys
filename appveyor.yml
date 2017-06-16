@@ -4,7 +4,7 @@ environment:
     VCPKG_DEFAULT_TRIPLET: x64-windows-static
     RUSTFLAGS: -Ctarget-feature=+crt-static
   - TARGET: x86_64-pc-windows-msvc
-    VCPKG_ALL_DYNAMIC: 1
+    VCPKGRS_DYNAMIC: 1
     VCPKG_DEFAULT_TRIPLET: x64-windows
 install:
   - ps: Start-FileDownload "https://static.rust-lang.org/dist/rust-nightly-${env:TARGET}.exe"

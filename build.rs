@@ -8,6 +8,9 @@ use std::process::Command;
 use std::env;
 
 fn main() {
+    println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
+    println!("cargo:rerun-if-env-changed=PQ_LIB_STATIC");
+    
     if let Ok(lib_dir) = env::var("PQ_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     } else if configured_by_pkg_config() {

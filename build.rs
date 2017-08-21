@@ -6,6 +6,8 @@ extern crate vcpkg;
 
 use std::process::Command;
 use std::env;
+use std::path::PathBuf;
+
 
 fn main() {
     println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
@@ -63,8 +65,28 @@ fn configured_by_vcpkg() -> bool {
     false
 }
 
+fn pg_config_path() -> PathBuf {
+    use std::ascii::AsciiExt;
+
+    if let Ok(target) = env::var("TARGET") {
+        let pg_config_for_target = &format!("PG_CONFIG_{}", target.to_ascii_uppercase().replace("-", "_"));
+        if let Some(pg_config_path) = env::var_os(pg_config_for_target) {
+
+            let path =  PathBuf::from(&pg_config_path);
+
+            if !path.exists() {
+                panic!("pg_config doesn't exist in the configured path: {:?}", path);
+            }
+
+            return path;
+        }
+    }
+    return PathBuf::from("pg_config");
+}
+
 fn pg_config_output(command: &str) -> Option<String> {
-    Command::new("pg_config")
+
+    Command::new(pg_config_path())
         .arg(command)
         .output()
         .ok()

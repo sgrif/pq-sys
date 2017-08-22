@@ -23,14 +23,7 @@ fn main() {
         let path = replace_homebrew_path_on_mac(path);
         println!("cargo:rustc-link-search=native={}", path);
     }
-
-    if cfg!(all(windows, target_env="msvc")) {
-        println!("cargo:rustc-link-lib=dylib=libpq");
-    } else if env::var_os("PQ_LIB_STATIC").is_some() {
-        println!("cargo:rustc-link-lib=static=pq");
-    } else {
-        println!("cargo:rustc-link-lib=pq");
-    }
+    static_or_not();
 }
 
 #[cfg(feature = "pkg-config")]
@@ -63,6 +56,34 @@ fn configured_by_vcpkg() -> bool {
 #[cfg(not(target_env = "msvc"))]
 fn configured_by_vcpkg() -> bool {
     false
+}
+
+fn static_or_not() {
+    use std::ascii::AsciiExt;
+
+    // On Windows-MSVC, always link dynamically
+    if cfg!(all(windows, target_env="msvc")) {
+        println!("cargo:rustc-link-lib=dylib=libpq");
+        return;
+    }
+
+    // Link unconditionally statically
+    if env::var_os("PQ_LIB_STATIC").is_some() {
+        println!("cargo:rustc-link-lib=static=pq");
+        return;
+    }
+
+    // Examine the per-target env vars
+    if let Ok(target) = env::var("TARGET") {
+        let pg_config_for_target = format!("PQ_LIB_STATIC_{}", target.to_ascii_uppercase().replace("-", "_"));
+        if env::var_os(&pg_config_for_target).is_some() {
+            println!("cargo:rustc-link-lib=static=pq");
+            return;
+        }
+    }
+    
+    // Otherwise, don't specify
+    println!("cargo:rustc-link-lib=pq");
 }
 
 fn pg_config_path() -> PathBuf {

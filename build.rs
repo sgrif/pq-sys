@@ -6,6 +6,8 @@ extern crate vcpkg;
 
 use std::process::Command;
 use std::env;
+use std::path::PathBuf;
+
 
 fn main() {
     println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
@@ -21,14 +23,7 @@ fn main() {
         let path = replace_homebrew_path_on_mac(path);
         println!("cargo:rustc-link-search=native={}", path);
     }
-
-    if cfg!(all(windows, target_env="msvc")) {
-        println!("cargo:rustc-link-lib=dylib=libpq");
-    } else if env::var_os("PQ_LIB_STATIC").is_some() {
-        println!("cargo:rustc-link-lib=static=pq");
-    } else {
-        println!("cargo:rustc-link-lib=pq");
-    }
+    static_or_not();
 }
 
 #[cfg(feature = "pkg-config")]
@@ -63,8 +58,56 @@ fn configured_by_vcpkg() -> bool {
     false
 }
 
+fn static_or_not() {
+    use std::ascii::AsciiExt;
+
+    // On Windows-MSVC, always link dynamically
+    if cfg!(all(windows, target_env="msvc")) {
+        println!("cargo:rustc-link-lib=dylib=libpq");
+        return;
+    }
+
+    // Link unconditionally statically
+    if env::var_os("PQ_LIB_STATIC").is_some() {
+        println!("cargo:rustc-link-lib=static=pq");
+        return;
+    }
+
+    // Examine the per-target env vars
+    if let Ok(target) = env::var("TARGET") {
+        let pg_config_for_target = format!("PQ_LIB_STATIC_{}", target.to_ascii_uppercase().replace("-", "_"));
+        if env::var_os(&pg_config_for_target).is_some() {
+            println!("cargo:rustc-link-lib=static=pq");
+            return;
+        }
+    }
+    
+    // Otherwise, don't specify
+    println!("cargo:rustc-link-lib=pq");
+}
+
+fn pg_config_path() -> PathBuf {
+    use std::ascii::AsciiExt;
+
+    if let Ok(target) = env::var("TARGET") {
+        let pg_config_for_target = &format!("PG_CONFIG_{}", target.to_ascii_uppercase().replace("-", "_"));
+        if let Some(pg_config_path) = env::var_os(pg_config_for_target) {
+
+            let path =  PathBuf::from(&pg_config_path);
+
+            if !path.exists() {
+                panic!("pg_config doesn't exist in the configured path: {:?}", path);
+            }
+
+            return path;
+        }
+    }
+    return PathBuf::from("pg_config");
+}
+
 fn pg_config_output(command: &str) -> Option<String> {
-    Command::new("pg_config")
+
+    Command::new(pg_config_path())
         .arg(command)
         .output()
         .ok()

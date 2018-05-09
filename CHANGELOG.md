@@ -3,6 +3,17 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.5] 2018-05-09
+
+### Added
+
+- Linking can now be dynamically handled per-target by specifying the `TARGET`
+  environment variable and `PQ_LIB_STATIC_$TARGET` environment variable.
+
+- The path to `pg_config` can now be dynamically handled per-target by
+  specifying the `TARGET` environment variable and `PG_CONFIG_$TARGET`
+  environment variable.
+
 ## [0.4.3] 2017-03-10
 
 ### Fixed

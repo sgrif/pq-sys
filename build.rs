@@ -129,7 +129,7 @@ fn configured_by_vcpkg() -> bool {
 fn pg_config_path() -> PathBuf {
     if let Ok(target) = env::var("TARGET") {
         let pg_config_for_target = &format!("PG_CONFIG_{}", target.to_ascii_uppercase().replace("-", "_"));
-        println!("cargo::rerun-if-env-changed={}", pg_config_for_target);
+        println!("cargo:rerun-if-env-changed={}", pg_config_for_target);
         if let Some(pg_config_path) = env::var_os(pg_config_for_target) {
 
             let path =  PathBuf::from(&pg_config_path);

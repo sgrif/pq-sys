@@ -18,10 +18,10 @@ following methods:
 All the config options, such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC`
 etc., of the crate [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)
 apply.
-* For MSVC ABI builds the build script will attempt use the library from a 
+* Then, for MSVC ABI builds the build script will attempt use the library from a
 [vcpkg](https://github.com/Microsoft/vcpkg) installation if there is one available.
-You may need to set VCPKG_ROOT (or run `vcpkg integrate install`) and run
-`vcpkg install libpq:x64-windows`.
+You may need to set VCPKG_ROOT (or run `vcpkg integrate install`), set VCPKGRS_DYNAMIC=1, and run
+`vcpkg install libpq:x64-windows`. See the documentation for the [vcpkg](https://docs.rs/vcpkg/) crate for more.
 * If it still can't locate the library, it will invoke the Postgres command
 `pg_config --libdir`
 

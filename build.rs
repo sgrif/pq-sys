@@ -9,6 +9,7 @@ use std::env;
 use std::path::PathBuf;
 use std::fmt::{self, Display};
 
+#[derive(Eq, PartialEq)]
 enum LinkType {
     Static,
     Dynamic
@@ -81,6 +82,12 @@ fn main() {
     println!("cargo:rerun-if-env-changed=PQ_LIB_STATIC");
     println!("cargo:rerun-if-env-changed=TARGET");
 
+    // If major version of PostgreSQL is not known, use 12 as default,
+    // as version 12 introduced new required linking flags for static builds.
+    // Those flags are normally optional, but required when version is >= 12
+    // and the build type is static.
+    let mut major_version = 12;
+
     if let Ok(lib_dir) = env::var("PQ_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     } else if configured_by_pkg_config() {
@@ -90,8 +97,20 @@ fn main() {
     } else if let Some(path) = pg_config_output("--libdir") {
         let path = replace_homebrew_path_on_mac(path);
         println!("cargo:rustc-link-search=native={}", path);
+
+        let pg_ver = pg_config_output("--version").expect("pg_config was already shown to work");
+        major_version = pg_ver.split_whitespace().nth(1)
+            .and_then(|s| s.split('.').nth(0))
+            .and_then(|s| s.parse::<u32>().ok()).expect("invalid version number schema");
     }
-    println!("cargo:rustc-link-lib={}", LinkingOptions::from_env());
+
+    let link_opts = LinkingOptions::from_env();
+    println!("cargo:rustc-link-lib={}", link_opts);
+
+    if major_version >= 12 && link_opts.linking_type == Some(LinkType::Static) {
+        println!("cargo:rustc-link-lib=static=pgcommon");
+        println!("cargo:rustc-link-lib=static=pgport");
+    }
 }
 
 #[cfg(feature = "pkg-config")]

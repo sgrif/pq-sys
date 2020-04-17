@@ -8,6 +8,12 @@ repository = "https://github.com/sgrif/pq-sys"
 links = "pq"
 build = "build.rs"
 
+[dependencies]
+openssl-sys = { version = "*", optional = true }
+
+[features]
+openssl-static = ["openssl-sys"]
+
 [lib]
 name = "pq_sys"
 

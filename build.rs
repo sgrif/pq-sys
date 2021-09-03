@@ -83,6 +83,7 @@ fn main() {
 
     if let Ok(lib_dir) = env::var("PQ_LIB_DIR") {
         println!("cargo:rustc-link-search=native={}", lib_dir);
+        emit_rpath(&lib_dir);
     } else if configured_by_pkg_config() {
         return // pkg_config does everything for us, including output for cargo
     } else if configured_by_vcpkg() {
@@ -90,6 +91,7 @@ fn main() {
     } else if let Some(path) = pg_config_output("--libdir") {
         let path = replace_homebrew_path_on_mac(path);
         println!("cargo:rustc-link-search=native={}", path);
+        emit_rpath(&path);
     }
     println!("cargo:rustc-link-lib={}", LinkingOptions::from_env());
 }
@@ -126,6 +128,19 @@ fn configured_by_vcpkg() -> bool {
 fn configured_by_vcpkg() -> bool {
     false
 }
+
+//
+// When libpq comes from a location that's not on the runtime linker's default
+// search path, setting RPATH on the built binary is required in order for libpq
+// to be found at runtime.  Many linkers support this with `-R/path/to/library`.
+//
+#[cfg(any(target_os = "illumos", target_os = "linux"))]
+fn emit_rpath(lib_dir: &str) {
+    println!("cargo:rustc-link-arg=-Wl,-R{}", lib_dir);
+}
+
+#[cfg(not(any(target_os = "illumos", target_os = "linux")))]
+fn emit_rpath(_: &str) {}
 
 fn pg_config_path() -> PathBuf {
     if let Ok(target) = env::var("TARGET") {

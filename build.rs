@@ -77,11 +77,34 @@ impl Display for LinkingOptions {
 }
 
 fn main() {
-    println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
     println!("cargo:rerun-if-env-changed=PQ_LIB_STATIC");
     println!("cargo:rerun-if-env-changed=TARGET");
 
-    if let Ok(lib_dir) = env::var("PQ_LIB_DIR") {
+    // if target is specified the more concrete pq_lib_dir overwrites a more general one
+    let lib_dir = if let Ok(target) = env::var("TARGET") {
+        let pq_lib_dir_for_target = format!("PQ_LIB_DIR_{}", target.to_ascii_uppercase().replace("-", "_"));
+        println!("cargo:rerun-if-env-changed={}", pq_lib_dir_for_target);
+        if let Ok(pg_lib_path) = env::var(pq_lib_dir_for_target.clone()) {
+            let path =  PathBuf::from(&pg_lib_path);
+            if !path.exists() {
+                panic!("Folder {:?} doesn't exist in the configured path: {:?}", pq_lib_dir_for_target, path);
+            }
+            println!("{:?} = {:?}", pq_lib_dir_for_target, pg_lib_path); // list in output for small debuggability
+            Ok(pg_lib_path)
+        }
+        else{
+            println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
+            println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
+            env::var("PQ_LIB_DIR")
+        }
+    }
+    else{
+        println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
+        println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
+        env::var("PQ_LIB_DIR")
+    };
+
+    if let Ok(lib_dir) = lib_dir {
         println!("cargo:rustc-link-search=native={}", lib_dir);
     } else if configured_by_pkg_config() {
         return // pkg_config does everything for us, including output for cargo
@@ -118,7 +141,6 @@ fn configured_by_vcpkg() -> bool {
         println!("cargo:rustc-link-lib=gdi32");
         println!("cargo:rustc-link-lib=user32");
         println!("cargo:rustc-link-lib=secur32");
-        println!("cargo:rustc-link-lib=shell32");
     }).is_ok()
 }
 

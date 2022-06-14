@@ -14,6 +14,8 @@ The build script of crate will attempt to find the lib path of libpq using the
 following methods:
 
 * First, if the environment variable `PQ_LIB_DIR` is set, it will use its value
+* Second it will look for an environment variable in the format of `PQ_LIB_DIR_{TARGET}`
+where `{TARGET}` gets replaced by the Target environment variable set for cross-compilation
 * If the environment variable isn't set, it tries to use pkg-config to locate it.
 All the config options, such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC`
 etc., of the crate [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)

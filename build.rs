@@ -93,15 +93,11 @@ fn main() {
             Ok(pg_lib_path)
         }
         else{
-            println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
-            println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
-            env::var("PQ_LIB_DIR")
+            use_general_lib_dir()
         }
     }
     else{
-        println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
-        println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
-        env::var("PQ_LIB_DIR")
+        use_general_lib_dir()
     };
 
     if let Ok(lib_dir) = lib_dir {
@@ -148,6 +144,19 @@ fn configured_by_vcpkg() -> bool {
 #[cfg(not(target_env = "msvc"))]
 fn configured_by_vcpkg() -> bool {
     false
+}
+
+fn use_general_lib_dir() -> Result<String, VarError>{
+    println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
+    println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
+
+    let pq_lib_dir = env::var("PQ_LIB_DIR");
+    if let Ok(pg_lib_path) = pq_lib_dir {
+        let path =  PathBuf::from(&pg_lib_path);
+        if !path.exists() {
+            panic!("Folder {:?} doesn't exist in the configured path: {:?}", "PQ_LIB_DIR", path);
+        }
+    }
 }
 
 fn pg_config_path() -> PathBuf {

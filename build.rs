@@ -83,21 +83,10 @@ fn main() {
     // if target is specified the more concrete pq_lib_dir overwrites a more general one
     let lib_dir = if let Ok(target) = env::var("TARGET") {
         let pq_lib_dir_for_target = format!("PQ_LIB_DIR_{}", target.to_ascii_uppercase().replace("-", "_"));
-        println!("cargo:rerun-if-env-changed={}", pq_lib_dir_for_target);
-        if let Ok(pg_lib_path) = env::var(pq_lib_dir_for_target.clone()) {
-            let path =  PathBuf::from(&pg_lib_path);
-            if !path.exists() {
-                panic!("Folder {:?} doesn't exist in the configured path: {:?}", pq_lib_dir_for_target, path);
-            }
-            println!("{:?} = {:?}", pq_lib_dir_for_target, pg_lib_path); // list in output for small debuggability
-            Ok(pg_lib_path)
-        }
-        else{
-            use_general_lib_dir()
-        }
+        check_and_use_lib_dir(&pq_lib_dir_for_target).or_else(|_| check_and_use_lib_dir("PQ_LIB_DIR"))
     }
     else{
-        use_general_lib_dir()
+        check_and_use_lib_dir("PQ_LIB_DIR")
     };
 
     if let Ok(lib_dir) = lib_dir {
@@ -146,17 +135,18 @@ fn configured_by_vcpkg() -> bool {
     false
 }
 
-fn use_general_lib_dir() -> Result<String, VarError>{
-    println!("cargo:rerun-if-env-changed=PQ_LIB_DIR");
-    println!("PQ_LIB_DIR = {:?}", env::var("PQ_LIB_DIR"));
+fn check_and_use_lib_dir(var_name: &str) -> Result<String, VarError>{
+    println!("cargo:rerun-if-env-changed={:?}", var_name);
+    println!("{:?} = {:?}", var_name , env::var(var_name));
 
-    let pq_lib_dir = env::var("PQ_LIB_DIR");
-    if let Ok(pg_lib_path) = pq_lib_dir {
+    let pq_lib_dir = env::var(var_name);
+    if let Ok(pg_lib_path) = pq_lib_dir.clone() {
         let path =  PathBuf::from(&pg_lib_path);
         if !path.exists() {
-            panic!("Folder {:?} doesn't exist in the configured path: {:?}", "PQ_LIB_DIR", path);
+            panic!("Folder {:?} doesn't exist in the configured path: {:?}", var_name, path);
         }
     }
+    pq_lib_dir
 }
 
 fn pg_config_path() -> PathBuf {

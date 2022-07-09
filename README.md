@@ -18,12 +18,12 @@ where `{TARGET}` gets replaced by the Target environment variable set for cross-
 * Second, if the environment variable `PQ_LIB_DIR` is set, it will use its value
 * If the environment variable isn't set, it tries to use pkg-config to locate it.
 All the config options, such as `PKG_CONFIG_ALLOW_CROSS`, `PKG_CONFIG_ALL_STATIC`
-etc., of the crate [pkg-config](http://alexcrichton.com/pkg-config-rs/pkg_config/index.html)
+etc., of the crate [pkg-config](https://docs.rs/pkg-config/)
 apply.
-* For MSVC ABI builds the build script will attempt use the library from a 
+* Then, for MSVC ABI builds the build script will attempt use the library from a
 [vcpkg](https://github.com/Microsoft/vcpkg) installation if there is one available.
-You may need to set VCPKG_ROOT (or run `vcpkg integrate install`) and run
-`vcpkg install libpq:x64-windows`.
+You may need to set VCPKG_ROOT (or run `vcpkg integrate install`), set VCPKGRS_DYNAMIC=1, and run
+`vcpkg install libpq:x64-windows`. See the documentation for the [vcpkg](https://docs.rs/vcpkg/) crate for more.
 * If it still can't locate the library, it will invoke the Postgres command
 `pg_config --libdir`
 

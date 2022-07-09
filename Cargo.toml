@@ -15,4 +15,4 @@ name = "pq_sys"
 pkg-config = { version = "0.3.0", optional = true }
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]
-vcpkg = "0.2"
+vcpkg = "0.2.6"

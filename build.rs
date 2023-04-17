@@ -120,6 +120,7 @@ fn configured_by_vcpkg() -> bool {
         println!("cargo:rustc-link-lib=user32");
         println!("cargo:rustc-link-lib=secur32");
         println!("cargo:rustc-link-lib=shell32");
+        println!("cargo:rustc-link-lib=wldap32");
     }).is_ok()
 }
 

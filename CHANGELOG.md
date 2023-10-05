@@ -3,6 +3,12 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.4.8] 2023-04-18
+
+## Fixed
+
+- Added `wldap` as dependency for the vcpk installation on windows as that's now required there
+
 ## [0.4.5] 2018-05-09
 
 ### Added

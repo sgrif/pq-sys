@@ -1,0 +1,83 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  push:
+    branches:
+      - master
+
+name: CI Tests
+
+jobs:
+  check_and_test:
+    name: Check
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-2019]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+      - name: Set environment variables
+        shell: bash
+        run: |
+          echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
+          echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
+      - name: Install postgres (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libpq-dev postgresql
+          echo "host    all             all             127.0.0.1/32            md5" > sudo tee -a /etc/postgresql/10/main/pg_hba.conf
+          sudo service postgresql restart && sleep 3
+          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
+          sudo service postgresql restart && sleep 3
+
+      - name: Install postgres (MacOS)
+        if: runner.os == 'macOS'
+        run: |
+          initdb -D /usr/local/var/postgres
+          pg_ctl -D /usr/local/var/postgres start
+          sleep 3
+          createuser -s postgres
+
+      - name: Install postgres (Windows)
+        if: runner.os == 'Windows'
+        shell: bash
+        run: |
+          choco install postgresql12 --force --params '/Password:root'
+          echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
+          echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
+          echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
+      - name: Install rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Check
+        shell: bash
+        run: |
+          cargo check
+      - name: Tests
+        shell: bash
+        run: |
+          cargo test
+      - name: Test compile diesel
+        shell: bash
+        run: |
+          cargo new test_diesel
+          cd test_diesel
+          cargo add diesel --no-default-features --features "postgres"
+          echo "[patch.crates-io]" >> Cargo.toml
+          echo "pq-sys = { path = \"..\" }" >> Cargo.toml
+          cat Cargo.toml
+          echo "use diesel::prelude::*;" > src/main.rs
+          echo "fn main() { PgConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
+          cat src/main.rs
+          cargo build

@@ -1,0 +1,3 @@
+[submodule "pq-src/source"]
+	path = pq-src/source
+	url = https://github.com/postgres/postgres

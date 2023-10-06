@@ -1,0 +1,27 @@
+[package]
+name = "pq-src"
+version = "0.1.0"
+edition = "2021"
+include = [
+        "src/*",
+        "build.rs",
+        "additional_include/pg_config.h",
+        "additional_include/pg_config_paths.h",
+        "additional_include/pg_config_ext.h",
+
+        "source/src/include/*",
+        "source/src/port/*",
+        "source/src/common/*",
+        "source/src/interfaces/libpq/*",
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[target.'cfg(not(target_os = "windows"))'.dependencies]
+openssl-sys = { version = "0.9.93", features = ["vendored"] }
+
+[build-dependencies]
+cc = "1.0.83"
+
+[target.'cfg(not(target_os = "windows"))'.build-dependencies]
+openssl-src = "300"

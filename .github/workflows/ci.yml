@@ -14,11 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
+        features: [default, bundled]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
         uses: actions/checkout@v3
-
+        with:
+          submodules: recursive
       - name: Cache cargo registry
         uses: actions/cache@v3
         with:
@@ -32,7 +34,7 @@ jobs:
           echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
           echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
       - name: Install postgres (Linux)
-        if: runner.os == 'Linux'
+        if: runner.os == 'Linux' && matrix.features == 'default'
         run: |
           sudo apt-get update
           sudo apt-get install -y libpq-dev postgresql
@@ -42,7 +44,7 @@ jobs:
           sudo service postgresql restart && sleep 3
 
       - name: Install postgres (MacOS)
-        if: runner.os == 'macOS'
+        if: runner.os == 'macOS' && matrix.features == 'default'
         run: |
           initdb -D /usr/local/var/postgres
           pg_ctl -D /usr/local/var/postgres start
@@ -50,34 +52,63 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres (Windows)
-        if: runner.os == 'Windows'
+        if: runner.os == 'Windows' && matrix.features == 'default'
         shell: bash
         run: |
           choco install postgresql12 --force --params '/Password:root'
           echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
           echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
           echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
+
+      # - name: Add msbuild to PATH
+      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
+      #   uses: microsoft/setup-msbuild@v1.3
+      #   with:
+      #     msbuild-architecture: x64
+      # - uses: ilammy/msvc-dev-cmd@v1
+      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
+      - name: Windows setup (bundled)
+        if: runner.os == 'Windows' && matrix.features == 'bundled'
+        shell: bash
+        run: |
+          echo "OPENSSL_RUST_USE_NASM=0" >> $GITHUB_ENV
+          echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
+      # - name: Windows setup (bundled)
+      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
+      #   shell: cmd
+      #   run: |
+      #     cd pq-src/source/
+      #     src\tools\msvc\build.bat libpq
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
 
       - name: Check
         shell: bash
         run: |
-          cargo check
+          cargo check --no-default-features --features "${{ matrix.features }}"
       - name: Tests
         shell: bash
         run: |
-          cargo test
+          cargo test --no-default-features --features "${{ matrix.features }}"
+
       - name: Test compile diesel
         shell: bash
         run: |
           cargo new test_diesel
           cd test_diesel
+          echo "[workspace]" >> Cargo.toml
           cargo add diesel --no-default-features --features "postgres"
+          cargo add pq-sys
           echo "[patch.crates-io]" >> Cargo.toml
           echo "pq-sys = { path = \"..\" }" >> Cargo.toml
           cat Cargo.toml
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { PgConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-          cat src/main.rs
-          cargo build
+          cargo build --features "pq-sys/${{ matrix.features }}"
+
+      - name: Test all files included
+        shell: bash
+        if: matrix.features == 'bundled'
+        run: |
+          cd pq-src
+          cargo publish --dry-run

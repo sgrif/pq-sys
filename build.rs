@@ -77,6 +77,16 @@ impl Display for LinkingOptions {
 }
 
 fn main() {
+    if cfg!(feature = "bundled") {
+        // everything else is handled 
+        // by pq-src
+        return;
+    }
+
+    #[cfg(target_os = "windows")]
+    println!("cargo:rustc-link-lib=libpq");
+    #[cfg(not(target_os = "windows"))]
+    println!("cargo:rustc-link-lib=pq");
     println!("cargo:rerun-if-env-changed=PQ_LIB_STATIC");
     println!("cargo:rerun-if-env-changed=TARGET");
 

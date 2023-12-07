@@ -7,11 +7,21 @@ repository = "https://github.com/sgrif/pq-sys"
 links = "pq"
 build = "build.rs"
 
+[workspace]
+members = ["pq-src"]
+
 [lib]
 name = "pq_sys"
+
+[dependencies]
+pq-src = { path = "pq-src", optional = true }
 
 [build-dependencies]
 pkg-config = { version = "0.3.0", optional = true }
 
 [target.'cfg(target_env = "msvc")'.build-dependencies]
 vcpkg = "0.2.6"
+
+[features]
+default = []
+bundled = ["pq-src"] 

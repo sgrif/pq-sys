@@ -199,6 +199,10 @@ fn main() {
             format!("{path}/src/include/port/win32_msvc/"),
         ]);
 
+    if cfg!(feature = "with-asan") {
+        basic_build.flag("-fsanitize=address");
+    }
+
     if cfg!(target_os = "linux") {
         basic_build.define("_GNU_SOURCE", None);
     }

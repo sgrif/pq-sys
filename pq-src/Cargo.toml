@@ -25,3 +25,7 @@ cc = "1.0.83"
 
 [target.'cfg(not(target_os = "windows"))'.build-dependencies]
 openssl-src = "300"
+
+[features]
+default = []
+with-asan = []

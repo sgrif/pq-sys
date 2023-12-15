@@ -53,7 +53,7 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres (Windows)
-        if: runner.os == 'Windows' && matrix.features == 'default'
+        if: runner.os == 'Windows' && matrix.features != 'bundled'
         shell: bash
         run: |
           choco install postgresql12 --force --params '/Password:root'

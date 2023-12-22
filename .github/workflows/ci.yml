@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-2019]
-        features: [default, bundled]
+        features: [default, bundled, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -33,6 +33,7 @@ jobs:
         run: |
           echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
           echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I./pq-src/source/src/interfaces/libpq/ -I./pq-src/source/src/include/ -I ./pq-src/additional_include" >> $GITHUB_ENV
       - name: Install postgres (Linux)
         if: runner.os == 'Linux' && matrix.features == 'default'
         run: |
@@ -52,7 +53,7 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres (Windows)
-        if: runner.os == 'Windows' && matrix.features == 'default'
+        if: runner.os == 'Windows' && matrix.features != 'bundled'
         shell: bash
         run: |
           choco install postgresql12 --force --params '/Password:root'

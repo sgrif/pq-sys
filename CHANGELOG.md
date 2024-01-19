@@ -3,6 +3,17 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## [0.5.0] 2024-01-19
+
+### Added
+
+- We added a `pq-src` crate and a `bundled` feature for `pq-sys`. This allows to build and link a static version of libpq during the rust build process. This feature currently supports builds targeting Windows, Linux and macOS. It requires a c-compiler toolchain for the target to build libpq from source.
+- We added a `buildtime_bindgen` feature flag that allows to generate bindings for your locally installed libpq version. This is helpful for cases where the target architecture is significantly different to what the built-in bindings assume.
+
+### Changed
+
+- We regenerated the bundled bindings to match the libpq version build by the `bundled` feature flag
+
 ## [0.4.8] 2023-04-18
 
 ## Fixed

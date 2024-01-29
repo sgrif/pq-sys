@@ -220,15 +220,15 @@ fn main() {
 
     basic_build
         .clone()
-        .files(LIBPORTS.iter().map(|p| format!("{path}{port_path}{p}")))
-        .compile("ports");
-
-    basic_build
-        .clone()
-        .files(LIBCOMMON.iter().map(|p| format!("{path}{common_path}{p}")))
-        .compile("pgcommon");
-
-    basic_build
-        .files(LIBPQ.iter().map(|p| format!("{path}{pq_path}{p}")))
+        .files(
+            LIBPORTS
+                .iter()
+                .map(|p| format!("{path}{port_path}{p}"))
+                .chain(LIBCOMMON.iter().map(|p| format!("{path}{common_path}{p}")))
+                .chain(LIBPQ.iter().map(|p| format!("{path}{pq_path}{p}"))),
+        )
         .compile("pq");
+
+    println!("cargo:include={path}/src/include");
+    println!("cargo:lib_dir={}", std::env::var("OUT_DIR").expect("Set by cargo"));
 }

@@ -1,6 +1,6 @@
 [package]
 name = "pq-src"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 include = [
         "src/*",
@@ -28,7 +28,7 @@ openssl-sys = { version = "0.9.93", features = ["vendored"] }
 cc = "1.0.83"
 
 [target.'cfg(not(target_os = "windows"))'.build-dependencies]
-openssl-src = "300"
+openssl-src = "300.0.0"
 
 [features]
 default = []

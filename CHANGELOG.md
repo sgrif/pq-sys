@@ -3,6 +3,14 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## pq-src [0.1.1] 
+
+### Changed
+
+- We updated the bundled libpq version to 16.2 to fix compatibility with openssl 3.2
+- We changed the build script to expose the bundled libpq headers by setting `DEP_PQ_SYS_SRC_INCLUDE` so that other *-sys crates can consume that information and reuse the bundled build provided by this crate
+
+
 ## [0.5.0] 2024-01-19
 
 ### Added

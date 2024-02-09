@@ -13,27 +13,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-latest, macos-latest, macos-14, windows-2019]
         features: [default, bundled, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           submodules: recursive
       - name: Cache cargo registry
-        uses: actions/cache@v3
+        uses: Swatinem/rust-cache@v2
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
       - name: Set environment variables
         shell: bash
         run: |
           echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
           echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I./pq-src/source/src/interfaces/libpq/ -I./pq-src/source/src/include/ -I ./pq-src/additional_include" >> $GITHUB_ENV
+
       - name: Install postgres (Linux)
         if: runner.os == 'Linux' && matrix.features == 'default'
         run: |
@@ -45,10 +44,18 @@ jobs:
           sudo service postgresql restart && sleep 3
 
       - name: Install postgres (MacOS)
-        if: runner.os == 'macOS' && matrix.features == 'default'
+        if: matrix.os == 'macos-latest' && matrix.features != 'bundled'
         run: |
           initdb -D /usr/local/var/postgres
           pg_ctl -D /usr/local/var/postgres start
+          sleep 3
+          createuser -s postgres
+
+      - name: Install postgres  (MacOS M1)
+        if: matrix.os == 'macos-14' && matrix.features != 'bundled'
+        run: |
+          brew install postgresql
+          brew services start postgresql@14
           sleep 3
           createuser -s postgres
 
@@ -61,25 +68,14 @@ jobs:
           echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
           echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
 
-      # - name: Add msbuild to PATH
-      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
-      #   uses: microsoft/setup-msbuild@v1.3
-      #   with:
-      #     msbuild-architecture: x64
-      # - uses: ilammy/msvc-dev-cmd@v1
-      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
+
       - name: Windows setup (bundled)
         if: runner.os == 'Windows' && matrix.features == 'bundled'
         shell: bash
         run: |
           echo "OPENSSL_RUST_USE_NASM=0" >> $GITHUB_ENV
           echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
-      # - name: Windows setup (bundled)
-      #   if: runner.os == 'Windows' && matrix.features == 'bundled'
-      #   shell: cmd
-      #   run: |
-      #     cd pq-src/source/
-      #     src\tools\msvc\build.bat libpq
+
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
 

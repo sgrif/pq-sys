@@ -220,15 +220,57 @@ fn main() {
 
     basic_build
         .clone()
-        .files(LIBPORTS.iter().map(|p| format!("{path}{port_path}{p}")))
-        .compile("ports");
-
-    basic_build
-        .clone()
-        .files(LIBCOMMON.iter().map(|p| format!("{path}{common_path}{p}")))
-        .compile("pgcommon");
-
-    basic_build
-        .files(LIBPQ.iter().map(|p| format!("{path}{pq_path}{p}")))
+        .files(
+            LIBPORTS
+                .iter()
+                .map(|p| format!("{path}{port_path}{p}"))
+                .chain(LIBCOMMON.iter().map(|p| format!("{path}{common_path}{p}")))
+                .chain(LIBPQ.iter().map(|p| format!("{path}{pq_path}{p}"))),
+        )
         .compile("pq");
+
+    let out = std::env::var("OUT_DIR").expect("Set by cargo");
+    let include_path = PathBuf::from(&out).join("include");
+    let lib_pq_path = PathBuf::from(format!("{path}/{pq_path}"));
+    std::fs::create_dir_all(&include_path).expect("Failed to create include directory");
+    std::fs::create_dir_all(include_path.join("postgres").join("internal"))
+        .expect("Failed to create include directory");
+    std::fs::copy(
+        lib_pq_path.join("libpq-fe.h"),
+        include_path.join("libpq-fe.h"),
+    )
+    .expect("Copying headers failed");
+    std::fs::copy(
+        lib_pq_path.join("libpq-events.h"),
+        include_path.join("libpq-events.h"),
+    )
+    .expect("Copying headers failed");
+
+    std::fs::copy(
+        lib_pq_path.join("libpq-int.h"),
+        include_path
+            .join("postgres")
+            .join("internal")
+            .join("libpq-int.h"),
+    )
+    .expect("Copying headers failed");
+    std::fs::copy(
+        lib_pq_path.join("fe-auth-sasl.h"),
+        include_path
+            .join("postgres")
+            .join("internal")
+            .join("fe-auth-sasl.h"),
+    )
+    .expect("Copying headers failed");
+    std::fs::copy(
+        lib_pq_path.join("pqexpbuffer.h"),
+        include_path
+            .join("postgres")
+            .join("internal")
+            .join("pqexpbuffer.h"),
+    )
+    .expect("Copying headers failed");
+
+    println!("cargo:include={out}/include");
+    println!("cargo:lib_dir={}", out);
 }

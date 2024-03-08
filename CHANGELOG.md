@@ -3,7 +3,14 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
-## pq-src [0.1.1] 
+## pq-src [0.1.2] 2024-03-08
+
+### Changed
+
+* Change `#[cfg(target_*)]` attributes in the build script to use cargo set environment variables
+  instead. This enables cross compiling `pq-src` to a different target system.
+
+## pq-src [0.1.1] 2024-02-09
 
 ### Changed
 

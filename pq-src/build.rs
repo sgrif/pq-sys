@@ -232,6 +232,8 @@ fn main() {
     let out = env::var("OUT_DIR").expect("Set by cargo");
     let include_path = PathBuf::from(&out).join("include");
     let lib_pq_path = PathBuf::from(format!("{path}/{pq_path}"));
+    let postgres_include_path = PathBuf::from(format!("{path}src/include"));
+    let additional_includes_path = PathBuf::from(format!("{crate_dir}/additional_include"));
     fs::create_dir_all(&include_path).expect("Failed to create include directory");
     fs::create_dir_all(include_path.join("postgres").join("internal"))
         .expect("Failed to create include directory");
@@ -243,6 +245,16 @@ fn main() {
     fs::copy(
         lib_pq_path.join("libpq-events.h"),
         include_path.join("libpq-events.h"),
+    )
+    .expect("Copying headers failed");
+    fs::copy(
+        postgres_include_path.join("postgres_ext.h"),
+        include_path.join("postgres_ext.h"),
+    )
+    .expect("Copying headers failed");
+    fs::copy(
+        additional_includes_path.join("pg_config_ext.h"),
+        include_path.join("pg_config_ext.h"),
     )
     .expect("Copying headers failed");
 

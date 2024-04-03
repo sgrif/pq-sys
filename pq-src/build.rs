@@ -2,7 +2,6 @@ use std::path::PathBuf;
 use std::{env, fs};
 
 const LIBPORTS_BASE: &[&str] = &[
-    "strlcat.c",
     "strlcpy.c",
     "snprintf.c",
     "pg_crc32c_sb8.c",
@@ -48,6 +47,7 @@ const LIBPORTS_WINDOWS: &[&str] = &[
     "win32stat.c",
     "open.c",
     "dirmod.c",
+    "strlcat.c",
 ];
 
 const LIBCOMMON_BASE: &[&str] = &[

@@ -3,6 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## pq-src [0.1.3] 2024-04-4
+
+### Changed
+
+* Include more required headers in the generated include directory
+* Fix including `strlcat` on windows only
+
 ## pq-src [0.1.2] 2024-03-08
 
 ### Changed

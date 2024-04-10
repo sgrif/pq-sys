@@ -22,15 +22,15 @@ const LIBPORTS_BASE: &[&str] = &[
     "quotes.c",
     "strerror.c",
     "tar.c",
+    "explicit_bzero.c",
 ];
 
 const LIBPORTS_LINUX: &[&str] = &["getpeereid.c", "thread.c"];
 
-const LIBPORTS_MACOS: &[&str] = &["explicit_bzero.c", "thread.c"];
+const LIBPORTS_MACOS: &[&str] = &["thread.c"];
 
 const LIBPORTS_WINDOWS: &[&str] = &[
     "getpeereid.c",
-    "explicit_bzero.c",
     "win32common.c",
     "win32dlopen.c",
     "win32env.c",

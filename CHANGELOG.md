@@ -3,6 +3,12 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## pq-src [0.1.5] 2024-05-10
+
+## Changed
+
+* Include a vendored copy of `explicit_bzero` to the linux build as well as that function only exists on newer glibc versions
+
 ## pq-src [0.1.4] 2024-04-05
 
 ## Changed 

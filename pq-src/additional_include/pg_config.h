@@ -79,6 +79,11 @@
 #ifndef __WIN32__
 /* Define to 1 if you have the `strerror_r' function. */
 #define HAVE_STRERROR_R 1
+
+#ifdef __APPLE__
+#define STRERROR_R_INT 1
+#endif
+
 #endif
 
 // windows does not have that header

@@ -3,7 +3,13 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
-## pq-src [0.1.5] 2024-05-10
+## pq-src [0.1.6] 2024-04-12
+
+## Changed
+
+* Fixed a potential compilation error on MacOS
+
+## pq-src [0.1.5] 2024-04-10
 
 ## Changed
 

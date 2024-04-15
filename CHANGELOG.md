@@ -3,6 +3,17 @@ All user visible changes to this project will be documented in this file.
 This project adheres to [Semantic Versioning](http://semver.org/), as described
 for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md)
 
+## Unreleased
+
+## Changed
+
+* The `bundled` feature of `pq-sys` no longer build a bundled version of `openssl`.
+  To bundle `openssl` when compiling `libpq` from source, add `openssl-sys` with the `vendored` feature to your crate dependencies:
+  ```toml
+  [dependencies]
+  openssl-sys = { version = "0.9.93", features = ["vendored"] }
+  ```
+
 ## pq-src [0.1.6] 2024-04-12
 
 ## Changed
@@ -17,7 +28,7 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## pq-src [0.1.4] 2024-04-05
 
-## Changed 
+## Changed
 
 * Readded `strlcat` on linux as well
 

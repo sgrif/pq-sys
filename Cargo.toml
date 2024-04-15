@@ -25,5 +25,5 @@ vcpkg = "0.2.6"
 
 [features]
 default = []
-bundled = ["pq-src"] 
+bundled = ["pq-src"]
 buildtime_bindgen = ["dep:bindgen"]

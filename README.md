@@ -31,6 +31,16 @@ The build script instructs Cargo to link the library statically if the environme
 variable `PQ_LIB_STATIC` is set. This can be useful, if targeting for a musl target.
 If pkg-config is being used, it's configuration options will apply.
 
+### Features
+
+* `buildtime_bindgen`: Run `bindgen` at build-time to generate bindings using installed headers. Not compatible with the `bundled` feature.
+* `bundled`: Build the bundled version of `libpq` from source.
+  To use a bundled version of `openssl`, add the `openssl-sys` crate with the `vendored` feature to your crate dependencies:
+  ```toml
+  [dependencies]
+  openssl-sys = { version = "0.9.93", features = ["vendored"] }
+  ```
+
 ## FAQ
 
 ### I'm seeing `dyld: Symbol not found __cg_jpeg_resync_to_restart` on macOS

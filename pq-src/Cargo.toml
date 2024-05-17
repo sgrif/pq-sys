@@ -15,7 +15,7 @@ include = [
         "source/src/interfaces/libpq/*",
 ]
 description = "Bundled version of libpq"
-license = "MIT OR Apache-2.0"
+license = "PostgreSQL License"
 repository = "https://github.com/sgrif/pq-sys"
 links = "pq_sys_src"
 keywords = ["bindings", "libpq", "pq-sys", "bundled"]

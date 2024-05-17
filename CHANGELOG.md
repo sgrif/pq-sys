@@ -5,7 +5,9 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
-## Changed
+## pq-sys [0.6.0] 2024-05-17
+
+### Changed
 
 * The `bundled` feature of `pq-sys` no longer build a bundled version of `openssl`.
   To bundle `openssl` when compiling `libpq` from source, add `openssl-sys` with the `vendored` feature to your crate dependencies:
@@ -16,19 +18,19 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## pq-src [0.1.6] 2024-04-12
 
-## Changed
+### Changed
 
 * Fixed a potential compilation error on MacOS
 
 ## pq-src [0.1.5] 2024-04-10
 
-## Changed
+### Changed
 
 * Include a vendored copy of `explicit_bzero` to the linux build as well as that function only exists on newer glibc versions
 
 ## pq-src [0.1.4] 2024-04-05
 
-## Changed
+### Changed
 
 * Readded `strlcat` on linux as well
 

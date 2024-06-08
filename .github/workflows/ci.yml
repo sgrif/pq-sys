@@ -70,10 +70,9 @@ jobs:
 
       - name: Windows setup (bundled)
         if: runner.os == 'Windows' && matrix.features == 'bundled'
-        shell: bash
         run: |
-          echo "OPENSSL_RUST_USE_NASM=0" >> $GITHUB_ENV
-          echo OPENSSL_SRC_PERL=C:/Strawberry/perl/bin/perl >> $GITHUB_ENV
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV
+          vcpkg install openssl:x64-windows-static-md
 
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -89,7 +88,7 @@ jobs:
 
       - name: Test compile diesel
         shell: bash
-        # currently broken as diesel does not allow pq-sys 0.5 yet
+        # allow to fail as diesel might not pull in the right feature yet
         continue-on-error: true
         run: |
           cargo new test_diesel

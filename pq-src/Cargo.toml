@@ -22,7 +22,7 @@ keywords = ["bindings", "libpq", "pq-sys", "bundled"]
 categories = ["database", "external-ffi-bindings"]
 readme = "README.md"
 
-[target.'cfg(not(target_os = "windows"))'.dependencies]
+[dependencies]
 openssl-sys = "0.9.93"
 
 [build-dependencies]

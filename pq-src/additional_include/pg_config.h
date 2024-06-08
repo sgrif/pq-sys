@@ -212,11 +212,8 @@
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
 
-
-#ifndef __WIN32__
 /* Define to 1 to build with OpenSSL support. (--with-ssl=openssl) */
 #define USE_OPENSSL 1
-#endif
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
@@ -275,4 +272,8 @@
 
 #if defined _WIN32
 #define HAVE_INET_ATON 1
+#endif
+
+#if defined _WIN32
+#define HAVE_DECL_STRNLEN 1
 #endif

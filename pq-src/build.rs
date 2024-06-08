@@ -48,6 +48,7 @@ const LIBPORTS_WINDOWS: &[&str] = &[
     "win32stat.c",
     "open.c",
     "dirmod.c",
+    "inet_aton.c",
 ];
 
 const LIBCOMMON_BASE: &[&str] = &[
@@ -78,22 +79,14 @@ const LIBCOMMON_BASE: &[&str] = &[
     "restricted_token.c",
     "sprompt.c",
     "logging.c",
-];
-
-const LIBCOMMON_NOT_WINDOWS: &[&str] = &[
     "cryptohash_openssl.c",
     "hmac_openssl.c",
     "protocol_openssl.c",
 ];
 
-const LIBCOMMON_WINDOWS: &[&str] = &[
-    "cryptohash.c",
-    "hmac.c",
-    "md5.c",
-    "sha1.c",
-    "sha2.c",
-    "wchar.c",
-];
+const LIBCOMMON_NOT_WINDOWS: &[&str] = &[];
+
+const LIBCOMMON_WINDOWS: &[&str] = &["wchar.c"];
 
 const LIBPQ_BASE: &[&str] = &[
     "fe-auth-scram.c",
@@ -109,9 +102,11 @@ const LIBPQ_BASE: &[&str] = &[
     "legacy-pqsignal.c",
     "libpq-events.c",
     "pqexpbuffer.c",
+    "fe-secure-common.c",
+    "fe-secure-openssl.c",
 ];
 
-const LIBPQ_NOT_WINDOWS: &[&str] = &["fe-secure-common.c", "fe-secure-openssl.c"];
+const LIBPQ_NOT_WINDOWS: &[&str] = &[];
 
 const LIBPQ_WINDOWS: &[&str] = &["fe-secure.c", "pthread-win32.c", "win32.c"];
 
@@ -173,6 +168,7 @@ fn main() {
         format!("{path}src/include"),
         format!("{crate_dir}/additional_include"),
         temp_include.clone(),
+        env::var("DEP_OPENSSL_INCLUDE").unwrap().clone(),
     ][..];
 
     let includes = if target_os == "windows" {
@@ -182,8 +178,7 @@ fn main() {
         ];
         [base_includes, includes_windows].concat()
     } else {
-        let includes_not_windows = &[env::var("DEP_OPENSSL_INCLUDE").unwrap().clone()];
-        [base_includes, includes_not_windows].concat()
+        base_includes.to_vec()
     };
 
     basic_build

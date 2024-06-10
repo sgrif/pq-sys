@@ -5,6 +5,13 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+## pq-sys [0.6.1] 2024-06-11
+
+### Changed
+
+* `pq-src` starting with version 0.3 now depends on openssl on windows as well add support for the scram-sha-256 authentication method
+* `pq-sys` adds support for pq-src 0.3.0
+
 ## pq-sys [0.6.0] 2024-05-17
 
 ### Changed

@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.6.0"
+version = "0.6.1"
 description = "Auto-generated rust bindings for libpq"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/pq-sys"
@@ -14,7 +14,7 @@ members = ["pq-src"]
 name = "pq_sys"
 
 [dependencies]
-pq-src = { path = "pq-src", version = "0.2", optional = true }
+pq-src = { path = "pq-src", version = ">=0.2, <0.4", optional = true }
 
 [build-dependencies]
 pkg-config = { version = "0.3.0", optional = true }

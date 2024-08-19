@@ -11,7 +11,11 @@
 #define BLCKSZ 8192
 
 /* Saved arguments from configure */
+#if defined USE_OPENSSL
 #define CONFIGURE_ARGS " '--with-openssl' '--without-readline'"
+#else
+#define CONFIGURE_ARGS " '--without-readline'"
+#endif
 
 /* Define to the default TCP port number on which the server listens and to
    which clients will try to connect. This can be overridden at run-time, but
@@ -211,9 +215,6 @@
 
 /* Define to 1 if you have the ANSI C header files. */
 #define STDC_HEADERS 1
-
-/* Define to 1 to build with OpenSSL support. (--with-ssl=openssl) */
-#define USE_OPENSSL 1
 
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */

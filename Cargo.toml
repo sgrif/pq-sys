@@ -14,7 +14,7 @@ members = ["pq-src"]
 name = "pq_sys"
 
 [dependencies]
-pq-src = { path = "pq-src", version = ">=0.2, <0.4", optional = true }
+pq-src = { path = "pq-src", version = ">=0.2, <0.4", optional = true , default-features = false }
 
 [build-dependencies]
 pkg-config = { version = "0.3.0", optional = true }
@@ -25,5 +25,6 @@ vcpkg = "0.2.6"
 
 [features]
 default = []
-bundled = ["pq-src"]
+bundled = ["pq-src/with-openssl"]
+bundled_without_openssl = ["dep:pq-src"]
 buildtime_bindgen = ["dep:bindgen"]

@@ -23,11 +23,12 @@ categories = ["database", "external-ffi-bindings"]
 readme = "README.md"
 
 [dependencies]
-openssl-sys = "0.9.93"
+openssl-sys = { version = "0.9.93", optional = true }
 
 [build-dependencies]
 cc = "1.0.83"
 
 [features]
-default = []
+default = ["with-openssl"]
 with-asan = []
+with-openssl = ["dep:openssl-sys"]

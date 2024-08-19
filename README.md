@@ -34,12 +34,13 @@ If pkg-config is being used, it's configuration options will apply.
 ### Features
 
 * `buildtime_bindgen`: Run `bindgen` at build-time to generate bindings using installed headers. Not compatible with the `bundled` feature.
-* `bundled`: Build the bundled version of `libpq` from source.
-  To use a bundled version of `openssl`, add the `openssl-sys` crate with the `vendored` feature to your crate dependencies:
+* `bundled`: Build the bundled version of `libpq` from source. It will look for `openssl` installed on your system.
+  To use a bundled version of `openssl`, add the `openssl-sys` crate with the vendored feature to your crate dependencies: 
   ```toml
   [dependencies]
   openssl-sys = { version = "0.9.93", features = ["vendored"] }
   ```
+* `bundled_without_openssl`: Build the bundled version of `libpq` from source without `openssl`. This disables the TLS support in `libpq`, so that you cannot connect to a database requiring TLS anymore.
 
 ## FAQ
 

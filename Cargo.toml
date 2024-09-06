@@ -25,6 +25,6 @@ vcpkg = "0.2.6"
 
 [features]
 default = []
-bundled = ["pq-src/with-openssl"]
+bundled = ["bundled_without_openssl", "pq-src/with-openssl"]
 bundled_without_openssl = ["dep:pq-src"]
 buildtime_bindgen = ["dep:bindgen"]

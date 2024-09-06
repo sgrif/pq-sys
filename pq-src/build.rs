@@ -187,7 +187,7 @@ fn main() {
     };
 
     if use_openssl {
-        includes.extend_from_slice(&[env::var("DEP_OPENSSL_INCLUDE").unwrap().clone()]);
+        includes.push(env::var("DEP_OPENSSL_INCLUDE").unwrap());
     }
 
     basic_build

@@ -79,10 +79,15 @@ const LIBCOMMON_BASE: &[&str] = &[
     "restricted_token.c",
     "sprompt.c",
     "logging.c",
+];
+
+const LIBCOMMON_OPENSSL: &[&str] = &[
     "cryptohash_openssl.c",
     "hmac_openssl.c",
     "protocol_openssl.c",
 ];
+
+const LIBCOMMON_NOT_OPENSSL: &[&str] = &["cryptohash.c", "hmac.c", "md5.c", "sha1.c", "sha2.c"];
 
 const LIBCOMMON_NOT_WINDOWS: &[&str] = &[];
 
@@ -102,9 +107,9 @@ const LIBPQ_BASE: &[&str] = &[
     "legacy-pqsignal.c",
     "libpq-events.c",
     "pqexpbuffer.c",
-    "fe-secure-common.c",
-    "fe-secure-openssl.c",
 ];
+
+const LIBPQ_OPENSSL: &[&str] = &["fe-secure-common.c", "fe-secure-openssl.c"];
 
 const LIBPQ_NOT_WINDOWS: &[&str] = &[];
 
@@ -120,6 +125,7 @@ fn unimplemented() -> ! {
 
 fn main() {
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
 
     println!("cargo:rerun-if-changed=additional_include");
     let crate_dir = env!("CARGO_MANIFEST_DIR");
@@ -168,10 +174,9 @@ fn main() {
         format!("{path}src/include"),
         format!("{crate_dir}/additional_include"),
         temp_include.clone(),
-        env::var("DEP_OPENSSL_INCLUDE").unwrap().clone(),
     ][..];
 
-    let includes = if target_os == "windows" {
+    let mut includes = if target_os == "windows" {
         let includes_windows = &[
             format!("{path}/src/include/port/win32/"),
             format!("{path}/src/include/port/win32_msvc/"),
@@ -180,6 +185,10 @@ fn main() {
     } else {
         base_includes.to_vec()
     };
+
+    if use_openssl {
+        includes.push(env::var("DEP_OPENSSL_INCLUDE").unwrap());
+    }
 
     basic_build
         .define("FRONTEND", None)
@@ -212,9 +221,23 @@ fn main() {
         _ => unimplemented(),
     };
 
+    let (libcommon, libpq) = if use_openssl {
+        // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
+        basic_build.define("USE_OPENSSL", "1");
+        (
+            [LIBCOMMON_BASE, LIBCOMMON_OPENSSL].concat(),
+            [LIBPQ_BASE, LIBPQ_OPENSSL].concat(),
+        )
+    } else {
+        (
+            [LIBCOMMON_BASE, LIBCOMMON_NOT_OPENSSL].concat(),
+            LIBPQ_BASE.to_vec(),
+        )
+    };
+
     let libports = LIBPORTS_BASE.iter().chain(libports_os);
-    let libcommon = LIBCOMMON_BASE.iter().chain(libcommon_os);
-    let libpq = LIBPQ_BASE.iter().chain(libpq_os);
+    let libcommon = libcommon.iter().chain(libcommon_os);
+    let libpq = libpq.iter().chain(libpq_os);
 
     basic_build
         .files(

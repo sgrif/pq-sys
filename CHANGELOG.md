@@ -5,6 +5,15 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### Changed
+
+* `openssl` usage can now be disabled with the `bundled_without_openssl` feature of `pq-sys`.
+  To deactivate `openssl`, enable it:
+  ```toml
+  [dependencies]
+  pq-sys = { version = "0.3.0", features = ["bundled_without_openssl"]}
+  ```
+
 ## pq-sys [0.6.1] 2024-06-11
 
 ### Changed

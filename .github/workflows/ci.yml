@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-13, macos-14, windows-2019]
-        features: [default, bundled, buildtime_bindgen]
+        features: [default, bundled, bundled_without_openssl, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
@@ -44,7 +44,7 @@ jobs:
           sudo service postgresql restart && sleep 3
 
       - name: Install postgres (MacOS)
-        if: matrix.os == 'macos-13' && matrix.features != 'bundled'
+        if: matrix.os == 'macos-13' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         run: |
           brew install postgresql
           brew services start postgresql@14
@@ -52,7 +52,7 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres  (MacOS M1)
-        if: matrix.os == 'macos-14' && matrix.features != 'bundled'
+        if: matrix.os == 'macos-14' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         run: |
           brew install postgresql
           brew services start postgresql@14
@@ -60,7 +60,7 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres (Windows)
-        if: runner.os == 'Windows' && matrix.features != 'bundled'
+        if: runner.os == 'Windows' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         shell: bash
         run: |
           choco install postgresql12 --force --params '/Password:root'
@@ -73,6 +73,18 @@ jobs:
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV
           vcpkg install openssl:x64-windows-static-md
+
+      - name: Remove openssl (Linux, bundled_without_openssl)
+        if: runner.os == 'Linux' && matrix.features == 'bundled_without_openssl'
+        run: sudo apt-get remove -y libssl-dev
+
+      - name: Remove openssl (MacOS, bundled_without_openssl)
+        if: matrix.os == 'macos-13' && matrix.features == 'bundled_without_openssl'
+        run: brew uninstall openssl@1.1
+
+      - name: Remove openssl (MacOS M1, bundled_without_openssl)
+        if: matrix.os == 'macos-14' && matrix.features == 'bundled_without_openssl'
+        run: brew uninstall openssl@1.1
 
       - name: Install rust toolchain
         uses: dtolnay/rust-toolchain@stable

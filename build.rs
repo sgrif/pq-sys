@@ -80,10 +80,12 @@ impl Display for LinkingOptions {
 }
 
 fn main() {
-    if cfg!(feature = "bundled") && cfg!(feature = "buildtime_bindgen") {
+    if (cfg!(feature = "bundled") || cfg!(feature = "bundled_without_openssl"))
+        && cfg!(feature = "buildtime_bindgen")
+    {
         panic!("Combining the `bundled` and `builtime_bindgen` feature is not supported");
     }
-    if cfg!(feature = "bundled") {
+    if cfg!(feature = "bundled") || cfg!(feature = "bundled_without_openssl") {
         // everything else is handled
         // by pq-src
         return;

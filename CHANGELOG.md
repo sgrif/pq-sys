@@ -5,6 +5,8 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.6.2] 2024-09-09
+
 ### Changed
 
 * `openssl` usage can now be disabled with the `bundled_without_openssl` feature of `pq-sys`.
@@ -13,6 +15,7 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
   [dependencies]
   pq-sys = { version = "0.3.0", features = ["bundled_without_openssl"]}
   ```
+  This disables the TLS support in `libpq`, so that you cannot connect to a database requiring TLS anymore.
 
 ## pq-sys [0.6.1] 2024-06-11
 

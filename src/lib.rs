@@ -1,4 +1,4 @@
-#[cfg(feature = "bundled")]
+#[cfg(any(feature = "bundled", feature = "bundled_without_openssl"))]
 extern crate pq_src;
 
 #[cfg(not(feature = "buildtime_bindgen"))]

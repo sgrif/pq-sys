@@ -5,6 +5,12 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.6.3] 2024-09-18
+
+### Fixed
+
+* Linking of bundled libpq with the `bundled_without_openssl` feature
+
 ### pq-sys [0.6.2] 2024-09-09
 
 ### Changed

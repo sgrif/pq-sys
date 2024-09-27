@@ -25,9 +25,9 @@ const LIBPORTS_BASE: &[&str] = &[
     "explicit_bzero.c",
 ];
 
-const LIBPORTS_LINUX: &[&str] = &["getpeereid.c", "thread.c"];
+const LIBPORTS_LINUX: &[&str] = &["getpeereid.c", "user.c"];
 
-const LIBPORTS_MACOS: &[&str] = &["thread.c"];
+const LIBPORTS_MACOS: &[&str] = &["user.c"];
 
 const LIBPORTS_WINDOWS: &[&str] = &[
     "getpeereid.c",
@@ -46,6 +46,7 @@ const LIBPORTS_WINDOWS: &[&str] = &[
     "win32security.c",
     "win32setlocale.c",
     "win32stat.c",
+    "win32gai_strerror.c",
     "open.c",
     "dirmod.c",
     "inet_aton.c",
@@ -96,6 +97,7 @@ const LIBCOMMON_WINDOWS: &[&str] = &["wchar.c"];
 const LIBPQ_BASE: &[&str] = &[
     "fe-auth-scram.c",
     "fe-auth.c",
+    "fe-cancel.c",
     "fe-connect.c",
     "fe-exec.c",
     "fe-lobj.c",

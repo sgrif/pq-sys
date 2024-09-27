@@ -5,6 +5,12 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.2] 2024-09-27
+
+### Changed
+
+* Update the bundled libpq version to the postgres 17.0 release
+
 ### pq-sys [0.6.3] 2024-09-18
 
 ### Fixed

@@ -100,8 +100,6 @@ jobs:
 
       - name: Test compile diesel
         shell: bash
-        # allow to fail as diesel might not pull in the right feature yet
-        continue-on-error: true
         run: |
           cargo new test_diesel
           cd test_diesel

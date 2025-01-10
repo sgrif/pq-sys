@@ -85,24 +85,43 @@ fn main() {
     {
         panic!("Combining the `bundled` and `builtime_bindgen` feature is not supported");
     }
-    if cfg!(feature = "bundled") || cfg!(feature = "bundled_without_openssl") {
-        // everything else is handled
-        // by pq-src
-        return;
-    }
+
+    let out_path = PathBuf::from(env::var("OUT_DIR").unwrap()).join("bindings.rs");
     #[cfg(feature = "buildtime_bindgen")]
     {
-        let bindings = bindgen::Builder::default()
-            .rustified_enum(".*")
-            .header("wrapper.h")
+        let bindings = include!("src/make_bindings.rs")
             .parse_callbacks(Box::new(bindgen::CargoCallbacks::new()))
             .generate()
             .expect("Unable to generate bindings");
 
-        let out_path = PathBuf::from(env::var("OUT_DIR").unwrap());
         bindings
-            .write_to_file(out_path.join("bindings.rs"))
+            .write_to_file(out_path)
             .expect("Couldn't write bindings!");
+    }
+    #[cfg(not(feature = "buildtime_bindgen"))]
+    {
+        let target_env = std::env::var("CARGO_CFG_TARGET_ENV").expect("Set by cargo");
+        let target_ptr_size =
+            std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
+        let bindings_name = match (target_env.as_str(), target_ptr_size.as_str()) {
+            ("msvc", "32") => "src/bindings_windows_32.rs",
+            ("msvc", "64") => "src/bindings_windows.rs",
+            (_, "32") => "src/bindings_linux_32.rs",
+            (_, "64") => "src/bindings_linux.rs",
+            (target_env, ptr_width) => {
+                panic!("Unsupported target: TargetEnv: `{target_env}`, PtrWidth: `{ptr_width}`\n\
+                        If you use this target open an issue at https://github.com/sgrif/pq-sys/issues/new\
+                        outlining the details of this target");
+            }
+        };
+        let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(bindings_name);
+        std::fs::copy(source_path, out_path).expect("Couldn't write bindings");
+    }
+
+    if cfg!(feature = "bundled") || cfg!(feature = "bundled_without_openssl") {
+        // everything else is handled
+        // by pq-src
+        return;
     }
 
     #[cfg(target_os = "windows")]

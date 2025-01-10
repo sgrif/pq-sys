@@ -5,6 +5,14 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.0] 2025-01-10
+
+* Bump bindgen to 0.71
+* Regenerate bindings and make sure that they compile on common platforms
+* Remove non-libpq items from the generated bindings
+* Bump crate to 2021 edition
+* Increase minimal supported rust version to 1.82
+
 ### pq-src [0.3.2] 2024-09-27
 
 ### Changed

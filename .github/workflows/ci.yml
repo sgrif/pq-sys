@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14, windows-2019]
+        os: [ubuntu-latest, macos-13, macos-14, windows-2019, ubuntu-24.04-arm]
         features: [default, bundled, bundled_without_openssl, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
@@ -34,7 +34,7 @@ jobs:
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I./pq-src/source/src/interfaces/libpq/ -I./pq-src/source/src/include/ -I ./pq-src/additional_include" >> $GITHUB_ENV
 
       - name: Install postgres (Linux)
-        if: runner.os == 'Linux' && matrix.features == 'default'
+        if: runner.os == 'Linux' && (matrix.features == 'default' || matrix.features == 'buildtime_bindgen')
         run: |
           sudo apt-get update
           sudo apt-get install -y libpq-dev postgresql

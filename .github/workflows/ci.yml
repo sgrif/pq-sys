@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-14, windows-2019, ubuntu-24.04-arm]
+        os: [ubuntu-latest, macos-13, macos-15, windows-2025, ubuntu-22.04-arm]
         features: [default, bundled, bundled_without_openssl, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
@@ -52,7 +52,7 @@ jobs:
           createuser -s postgres
 
       - name: Install postgres  (MacOS M1)
-        if: matrix.os == 'macos-14' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        if: matrix.os == 'macos-15' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         run: |
           brew install postgresql
           brew services start postgresql@14
@@ -79,11 +79,7 @@ jobs:
         run: sudo apt-get remove -y libssl-dev
 
       - name: Remove openssl (MacOS, bundled_without_openssl)
-        if: matrix.os == 'macos-13' && matrix.features == 'bundled_without_openssl'
-        run: brew uninstall openssl@1.1
-
-      - name: Remove openssl (MacOS M1, bundled_without_openssl)
-        if: matrix.os == 'macos-14' && matrix.features == 'bundled_without_openssl'
+        if: runner.os == 'MacOS' && matrix.features == 'bundled_without_openssl'
         run: brew uninstall openssl@1.1
 
       - name: Install rust toolchain
@@ -100,8 +96,6 @@ jobs:
 
       - name: Test compile diesel
         shell: bash
-        # currently broken as diesel does not allow pq-sys 0.7 yet
-        continue-on-error: true
         run: |
           cargo new test_diesel
           cd test_diesel

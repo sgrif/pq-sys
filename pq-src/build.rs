@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 use std::{env, fs};
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPORTS_BASE: &[&str] = &[
     "strlcat.c",
     "strlcpy.c",
@@ -25,10 +28,19 @@ const LIBPORTS_BASE: &[&str] = &[
     "explicit_bzero.c",
 ];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPORTS_LINUX: &[&str] = &["getpeereid.c", "user.c"];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPORTS_MACOS: &[&str] = &["user.c"];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPORTS_WINDOWS: &[&str] = &[
     "getpeereid.c",
     "win32common.c",
@@ -52,6 +64,9 @@ const LIBPORTS_WINDOWS: &[&str] = &[
     "inet_aton.c",
 ];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBCOMMON_BASE: &[&str] = &[
     "file_perm.c",
     "encnames.c",
@@ -82,18 +97,33 @@ const LIBCOMMON_BASE: &[&str] = &[
     "logging.c",
 ];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBCOMMON_OPENSSL: &[&str] = &[
     "cryptohash_openssl.c",
     "hmac_openssl.c",
     "protocol_openssl.c",
 ];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBCOMMON_NOT_OPENSSL: &[&str] = &["cryptohash.c", "hmac.c", "md5.c", "sha1.c", "sha2.c"];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBCOMMON_NOT_WINDOWS: &[&str] = &[];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBCOMMON_WINDOWS: &[&str] = &["wchar.c"];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPQ_BASE: &[&str] = &[
     "fe-auth-scram.c",
     "fe-auth.c",
@@ -111,10 +141,19 @@ const LIBPQ_BASE: &[&str] = &[
     "pqexpbuffer.c",
 ];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPQ_OPENSSL: &[&str] = &["fe-secure-common.c", "fe-secure-openssl.c"];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPQ_NOT_WINDOWS: &[&str] = &[];
 
+// If you update this file list also
+// update the list of includes files in
+// the Cargo.toml file
 const LIBPQ_WINDOWS: &[&str] = &["fe-secure.c", "pthread-win32.c", "win32.c"];
 
 fn unimplemented() -> ! {

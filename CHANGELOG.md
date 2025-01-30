@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.3] 2025-01-30
+
+* Remove scripts and other unused files from the published package
+
 ### pq-sys [0.7.0] 2025-01-10
 
 * Bump bindgen to 0.71

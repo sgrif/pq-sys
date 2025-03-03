@@ -1,6 +1,6 @@
 [package]
 name = "pq-src"
-version = "0.3.3"
+version = "0.3.4"
 edition = "2021"
 include = [
         "src/**/*.rs",
@@ -46,8 +46,11 @@ include = [
         "source/src/include/common/cryptohash.h",
         "source/src/include/common/scram-common.h",
         "source/src/include/common/sha2.h",
+        "source/src/common/sha2_int.h",
+        "source/src/common/sha1_int.h",
         "source/src/include/common/sha1.h",
         "source/src/include/common/md5.h",
+        "source/src/common/md5_int.h",
         "source/src/include/common/ip.h",
         "source/src/include/common/jsonapi.h",
         "source/src/include/common/kwlookup.h",

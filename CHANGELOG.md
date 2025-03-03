@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.4] 2025-03-03
+
+* Include three missing header files for the without openssl configuration
+
 ### pq-src [0.3.3] 2025-01-30
 
 * Remove scripts and other unused files from the published package

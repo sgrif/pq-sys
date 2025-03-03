@@ -117,3 +117,11 @@ jobs:
           git reset --hard HEAD
           cd pq-src
           cargo publish --dry-run
+      - name: Test all files included (without openssl)
+        shell: bash
+        if: matrix.features == 'bundled_without_openssl'
+        run: |
+          rm -rf test_diesel
+          git reset --hard HEAD
+          cd pq-src
+          cargo publish --dry-run --no-default-features

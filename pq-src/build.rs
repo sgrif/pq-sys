@@ -169,7 +169,7 @@ fn main() {
     let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
 
     println!("cargo:rerun-if-changed=additional_include");
-    let crate_dir = std::env::var("CARGO_MANIFEST_DIR").unwrap();
+    let crate_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
     let temp_include = format!("{}/more_include/", env::var("OUT_DIR").unwrap());
     let path = format!("{crate_dir}/source/");
     let port_path = "src/port/";

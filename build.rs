@@ -114,7 +114,8 @@ fn main() {
                         outlining the details of this target");
             }
         };
-        let source_path = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join(bindings_name);
+        let manifest_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
+        let source_path = PathBuf::from(manifest_dir).join(bindings_name);
         std::fs::copy(source_path, out_path).expect("Couldn't write bindings");
     }
 

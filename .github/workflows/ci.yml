@@ -43,17 +43,10 @@ jobs:
           sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
           sudo service postgresql restart && sleep 3
 
-      - name: Install postgres (MacOS)
-        if: matrix.os == 'macos-13' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
-        run: |
-          brew install postgresql
-          brew services start postgresql@14
-          sleep 3
-          createuser -s postgres
-
       - name: Install postgres  (MacOS M1)
-        if: matrix.os == 'macos-15' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        if: (matrix.os == 'macos-15' || matrix.os == 'macos-13') && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         run: |
+          brew update
           brew install postgresql
           brew services start postgresql@14
           sleep 3

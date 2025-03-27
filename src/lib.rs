@@ -3,8 +3,17 @@ extern crate pq_src;
 
 #[allow(non_camel_case_types, non_upper_case_globals, non_snake_case)]
 mod bindings {
+    #[cfg(buildscript_run)]
     include!(concat!(env!("OUT_DIR"), "/bindings.rs"));
 }
+
+#[cfg(not(buildscript_run))]
+compile_error!(
+    "pq-sys relies on build scripts beeing executed. \n \
+     Please double check that you don't have a `[target.*.pq]` entry \
+     in your `.cargo/config.toml`\n \
+     These entries prevent build scripts from beeing run"
+);
 
 pub use bindings::*;
 

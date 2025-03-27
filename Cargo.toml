@@ -35,3 +35,6 @@ default = []
 bundled = ["bundled_without_openssl", "pq-src/with-openssl"]
 bundled_without_openssl = ["dep:pq-src"]
 buildtime_bindgen = ["dep:bindgen"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(buildscript_run)'] }

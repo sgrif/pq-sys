@@ -80,6 +80,7 @@ impl Display for LinkingOptions {
 }
 
 fn main() {
+    println!("cargo::rustc-cfg=buildscript_run");
     if (cfg!(feature = "bundled") || cfg!(feature = "bundled_without_openssl"))
         && cfg!(feature = "buildtime_bindgen")
     {

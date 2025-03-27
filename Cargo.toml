@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.7.0"
+version = "0.7.1"
 description = "Auto-generated rust bindings for libpq"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/pq-sys"
@@ -35,3 +35,6 @@ default = []
 bundled = ["bundled_without_openssl", "pq-src/with-openssl"]
 bundled_without_openssl = ["dep:pq-src"]
 buildtime_bindgen = ["dep:bindgen"]
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(buildscript_run)'] }

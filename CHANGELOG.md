@@ -5,6 +5,11 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.1] 2025-03-27
+
+* Restore compablilities with non-cargo build systems
+* Add a safe-guard to make sure users get a better error message if the build script is not run
+
 ### pq-src [0.3.5] 2025-03-17
 
 * Update the bundled libpq version to 17.4

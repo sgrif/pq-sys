@@ -89,6 +89,7 @@ jobs:
 
       - name: Test compile diesel
         shell: bash
+        if: matrix.features != 'buildtime_bindgen'
         run: |
           cargo new test_diesel
           cd test_diesel

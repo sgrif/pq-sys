@@ -72,14 +72,6 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
-// that function does not exist on macos
-#ifndef __APPLE__
-#ifndef __WIN32__
-/* Define to 1 if you have the `strchrnul' function. */
-#define HAVE_STRCHRNUL 1
-#endif
-#endif
-
 #ifndef __WIN32__
 /* Define to 1 if you have the `strerror_r' function. */
 #define HAVE_STRERROR_R 1
@@ -97,14 +89,8 @@
 
 #endif
 
-/* Define to 1 if you have the <string.h> header file. */
-#define HAVE_STRING_H 1
-
 /* Define to 1 if you have the `strnlen' function. */
 #define HAVE_STRNLEN 1
-
-/* Define to 1 if you have the `strsignal' function. */
-#define HAVE_STRSIGNAL 1
 
 /* Define to 1 if your compiler understands `typeof' or something similar. */
 #define HAVE_TYPEOF 1
@@ -182,8 +168,9 @@
 #define PG_VERSION_NUM 160000
 
 /* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR "PostgreSQL 16.0 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.1 20230728 (Red Hat 13.2.1-1), 64-bit"
-
+#define PG_VERSION_STR                                                         \
+  "PostgreSQL 16.0 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.1 "      \
+  "20230728 (Red Hat 13.2.1-1), 64-bit"
 
 /* RELSEG_SIZE is the maximum number of blocks allowed in one disk file. Thus,
    the maximum size of a single file is RELSEG_SIZE * BLCKSZ; relations bigger
@@ -219,13 +206,13 @@
 /* Define WORDS_BIGENDIAN to 1 if your processor stores words with the most
    significant byte first (like Motorola and SPARC, unlike Intel). */
 #if defined AC_APPLE_UNIVERSAL_BUILD
-# if defined __BIG_ENDIAN__
-#  define WORDS_BIGENDIAN 1
-# endif
+#if defined __BIG_ENDIAN__
+#define WORDS_BIGENDIAN 1
+#endif
 #else
-# ifndef WORDS_BIGENDIAN
+#ifndef WORDS_BIGENDIAN
 /* #  undef WORDS_BIGENDIAN */
-# endif
+#endif
 #endif
 
 /* Size of a WAL file block. This need have no particular relation to BLCKSZ.
@@ -234,7 +221,6 @@
    buffers, else direct I/O may fail. Changing XLOG_BLCKSZ requires an initdb.
    */
 #define XLOG_BLCKSZ 8192
-
 
 /* Define to `__inline__' or `__inline' if that's what the C compiler
    calls it, or to nothing if 'inline' is not supported under any name.  */
@@ -256,8 +242,8 @@
    previous line.  Perhaps some future version of Sun C++ will work with
    restrict; if so, hopefully it defines __RESTRICT like Sun C does.  */
 #if defined __SUNPRO_CC && !defined __RESTRICT
-# define _Restrict
-# define __restrict__
+#define _Restrict
+#define __restrict__
 #endif
 
 /* Define to how the compiler spells `typeof'. */

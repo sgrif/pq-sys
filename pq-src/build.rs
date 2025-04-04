@@ -164,6 +164,40 @@ fn unimplemented() -> ! {
     );
 }
 
+macro_rules! make_test_for {
+    ($name: ident, $test: literal) => {
+        const $name: &str = concat!(
+            r#"
+#include<string.h>
+
+int main() {"#,
+            $test,
+            r#"
+}"#
+        );
+    };
+}
+
+make_test_for!(TEST_FOR_STRCHRNUL, r#"strchrnul("", 42);"#);
+make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
+
+fn check_compiles(test: &str) -> bool {
+    let test_path = std::env::var("OUT_DIR").expect("Set by cargo") + "/test.c";
+    std::fs::write(&test_path, &test).expect("Failed to write test");
+    let r = cc::Build::new().file(&test_path).try_compile("test");
+    std::fs::remove_file(test_path).expect("Failed to remove test file");
+    if let Err(ref e) = r {
+        println!("{e}");
+    }
+    r.is_ok()
+}
+
+fn conditional_define(test: &str, define: &str, command: &mut cc::Build) {
+    if check_compiles(test) {
+        command.define(define, None);
+    }
+}
+
 fn main() {
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
@@ -275,6 +309,11 @@ fn main() {
             LIBPQ_BASE.to_vec(),
         )
     };
+    // don't even try on windows it's not there
+    if std::env::var("CARGO_CFG_WINDOWS").is_err() {
+        conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
+    }
+    conditional_define(TEST_FOR_STRSIGNAL, "HAVE_STRSIGNAL", &mut basic_build);
 
     let libports = LIBPORTS_BASE.iter().chain(libports_os);
     let libcommon = libcommon.iter().chain(libcommon_os);

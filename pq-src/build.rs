@@ -164,6 +164,26 @@ fn unimplemented() -> ! {
     );
 }
 
+const TEST_FOR_STRCHRNUL: &str = r#"
+#include<string.h>
+
+int main() {
+    strchrnul("", 42);
+}
+
+"#;
+
+fn check_compiles(test: &str) -> bool {
+    let test_path = std::env::var("OUT_DIR").expect("Set by cargo") + "/test.c";
+    std::fs::write(&test_path, &test).expect("Failed to write test");
+    let r = cc::Build::new().file(&test_path).try_compile("test");
+    std::fs::remove_file(test_path).expect("Failed to remove test file");
+    if let Err(ref e) = r {
+        println!("{e}");
+    }
+    r.is_ok()
+}
+
 fn main() {
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
@@ -275,6 +295,10 @@ fn main() {
             LIBPQ_BASE.to_vec(),
         )
     };
+
+    if check_compiles(TEST_FOR_STRCHRNUL) {
+        basic_build.define("HAVE_STRCHRNUL", Some("1"));
+    }
 
     let libports = LIBPORTS_BASE.iter().chain(libports_os);
     let libcommon = libcommon.iter().chain(libcommon_os);

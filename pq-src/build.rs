@@ -164,14 +164,22 @@ fn unimplemented() -> ! {
     );
 }
 
-const TEST_FOR_STRCHRNUL: &str = r#"
+macro_rules! make_test_for {
+    ($name: ident, $test: literal) => {
+        const $name: &str = concat!(
+            r#"
 #include<string.h>
 
-int main() {
-    strchrnul("", 42);
+int main() {"#,
+            $test,
+            r#"
+}"#
+        );
+    };
 }
 
-"#;
+make_test_for!(TEST_FOR_STRCHRNUL, r#"strchrnul("", 42);"#);
+make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
 
 fn check_compiles(test: &str) -> bool {
     let test_path = std::env::var("OUT_DIR").expect("Set by cargo") + "/test.c";
@@ -182,6 +190,12 @@ fn check_compiles(test: &str) -> bool {
         println!("{e}");
     }
     r.is_ok()
+}
+
+fn conditional_define(test: &str, define: &str, command: &mut cc::Build) {
+    if check_compiles(test) {
+        command.define(define, None);
+    }
 }
 
 fn main() {
@@ -295,10 +309,11 @@ fn main() {
             LIBPQ_BASE.to_vec(),
         )
     };
-
-    if check_compiles(TEST_FOR_STRCHRNUL) {
-        basic_build.define("HAVE_STRCHRNUL", Some("1"));
+    // don't even try on windows it's not there
+    if std::env::var("CARGO_CFG_WINDOWS").is_err() {
+        conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
     }
+    conditional_define(TEST_FOR_STRSIGNAL, "HAVE_STRSIGNAL", &mut basic_build);
 
     let libports = LIBPORTS_BASE.iter().chain(libports_os);
     let libcommon = libcommon.iter().chain(libcommon_os);

@@ -199,20 +199,33 @@ fn conditional_define(test: &str, define: &str, command: &mut cc::Build) {
 }
 
 fn main() {
+    // Get build information from environment
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
 
     println!("cargo:rerun-if-changed=additional_include");
+
+    // === Get and define various paths ===
+
+    // Path to pq-src (where this build.rs is located)
     let crate_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
-    let temp_include = format!("{}/more_include/", env::var("OUT_DIR").unwrap());
+    // Path to where this build script shall place it's output
+    let out = env::var("OUT_DIR").expect("Set by cargo");
+
+    // Path to PostgreSQL source code
     let path = format!("{crate_dir}/source/");
+    // Paths to relevant components within the PostgreSQL source code
     let port_path = "src/port/";
     let common_path = "src/common/";
     let pq_path = "src/interfaces/libpq/";
 
+    // For includes that are created during build time
+    let temp_include = format!("{}/more_include/", env::var("OUT_DIR").unwrap());
     if !PathBuf::from(&temp_include).exists() {
         fs::create_dir(&temp_include).unwrap();
     }
+
+    // Select port header based on target OS
     if !PathBuf::from(format!("{temp_include}pg_config_os.h")).exists() {
         match target_os.as_str() {
             "linux" => {
@@ -242,8 +255,7 @@ fn main() {
         }
     }
 
-    let mut basic_build = cc::Build::new();
-
+    // Include paths for all builds
     let base_includes = &[
         format!("{path}{port_path}"),
         format!("{path}src/include"),
@@ -251,6 +263,7 @@ fn main() {
         temp_include.clone(),
     ][..];
 
+    // Add additional include paths for windows builds
     let mut includes = if target_os == "windows" {
         let includes_windows = &[
             format!("{path}/src/include/port/win32/"),
@@ -261,10 +274,13 @@ fn main() {
         base_includes.to_vec()
     };
 
+    // Add includes for openssl (if required)
     if use_openssl {
         includes.push(env::var("DEP_OPENSSL_INCLUDE").unwrap());
     }
 
+    // Create "compiler" and add previously determined includes
+    let mut basic_build = cc::Build::new();
     basic_build
         .define("FRONTEND", None)
         .warnings(false)
@@ -274,6 +290,7 @@ fn main() {
         basic_build.flag("-fsanitize=address");
     }
 
+    // Add necessary defines based on OS and collect OS-specific files for compilation
     let (libports_os, libcommon_os, libpq_os) = match target_os.as_str() {
         "linux" => {
             basic_build.define("_GNU_SOURCE", None);
@@ -296,6 +313,7 @@ fn main() {
         _ => unimplemented(),
     };
 
+    // Add defines for openssl (if needed) and collect files for compilation
     let (libcommon, libpq) = if use_openssl {
         // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
         basic_build.define("USE_OPENSSL", "1");
@@ -309,16 +327,18 @@ fn main() {
             LIBPQ_BASE.to_vec(),
         )
     };
-    // don't even try on windows it's not there
-    if std::env::var("CARGO_CFG_WINDOWS").is_err() {
-        conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
-    }
+
+    // Check if strchrnul and/or strsignal are supported, if so add defines for them
+    conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
     conditional_define(TEST_FOR_STRSIGNAL, "HAVE_STRSIGNAL", &mut basic_build);
 
+    // Collect files for compilation
     let libports = LIBPORTS_BASE.iter().chain(libports_os);
     let libcommon = libcommon.iter().chain(libcommon_os);
     let libpq = libpq.iter().chain(libpq_os);
 
+    // Compile code into statically linked library
+    // Note: The compilation will output to $OUT_DIR/libpq.a
     basic_build
         .files(
             (libports.map(|p| format!("{path}{port_path}{p}")))
@@ -327,11 +347,16 @@ fn main() {
         )
         .compile("pq");
 
-    let out = env::var("OUT_DIR").expect("Set by cargo");
+    // Directory that shall hold the relevant headers for next step(s)
     let include_path = PathBuf::from(&out).join("include");
+    // Path to libpq module inside PostgreSQL source code
     let lib_pq_path = PathBuf::from(format!("{path}/{pq_path}"));
+    // Path to includes within postgres source code
     let postgres_include_path = PathBuf::from(format!("{path}src/include"));
+    // Path to additional includes that are shipped with pq-src
     let additional_includes_path = PathBuf::from(format!("{crate_dir}/additional_include"));
+
+    // Copy over relevant headers for next step(s)
     fs::create_dir_all(&include_path).expect("Failed to create include directory");
     fs::create_dir_all(include_path.join("postgres").join("internal"))
         .expect("Failed to create include directory");

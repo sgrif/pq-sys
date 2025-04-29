@@ -212,40 +212,48 @@ fn main() {
     // Path to where this build script shall place it's output
     let out = env::var("OUT_DIR").expect("Set by cargo");
 
+    // Path to additional includes that are shipped with pq-src
+    let additional_includes_path = PathBuf::from(&crate_dir).join("additional_include");
+
     // Path to PostgreSQL source code
-    let path = format!("{crate_dir}/source/");
+    let psql_source_path = PathBuf::from(&crate_dir).join("source");
+
     // Paths to relevant components within the PostgreSQL source code
-    let port_path = "src/port/";
-    let common_path = "src/common/";
-    let pq_path = "src/interfaces/libpq/";
+    let psql_include_path = psql_source_path.join("src").join("include");
+    let port_path = psql_source_path.join("src").join("port");
+    let common_path = psql_source_path.join("src").join("common");
+    let libpq_path = psql_source_path
+        .join("src")
+        .join("interfaces")
+        .join("libpq");
 
     // For includes that are created during build time
-    let temp_include = format!("{}/more_include/", env::var("OUT_DIR").unwrap());
-    if !PathBuf::from(&temp_include).exists() {
+    let temp_include = PathBuf::from(&out).join("more_include");
+    if !temp_include.exists() {
         fs::create_dir(&temp_include).unwrap();
     }
 
     // Select port header based on target OS
-    if !PathBuf::from(format!("{temp_include}pg_config_os.h")).exists() {
+    if !temp_include.join("pg_config_os.h").exists() {
         match target_os.as_str() {
             "linux" => {
                 fs::copy(
-                    format!("{path}src/include/port/linux.h"),
-                    format!("{temp_include}pg_config_os.h"),
+                    psql_include_path.join("port/linux.h"),
+                    temp_include.join("pg_config_os.h"),
                 )
                 .unwrap();
             }
             "macos" => {
                 fs::copy(
-                    format!("{path}src/include/port/darwin.h"),
-                    format!("{temp_include}pg_config_os.h"),
+                    psql_include_path.join("port/darwin.h"),
+                    temp_include.join("pg_config_os.h"),
                 )
                 .unwrap();
             }
             "windows" => {
                 fs::copy(
-                    format!("{path}src/include/port/win32.h"),
-                    format!("{temp_include}pg_config_os.h"),
+                    psql_include_path.join("port/win32.h"),
+                    temp_include.join("pg_config_os.h"),
                 )
                 .unwrap();
                 println!("cargo:rustc-link-lib=Secur32");
@@ -257,17 +265,17 @@ fn main() {
 
     // Include paths for all builds
     let base_includes = &[
-        format!("{path}{port_path}"),
-        format!("{path}src/include"),
-        format!("{crate_dir}/additional_include"),
+        port_path.clone(),
+        psql_include_path.clone(),
+        additional_includes_path.clone(),
         temp_include.clone(),
     ][..];
 
     // Add additional include paths for windows builds
     let mut includes = if target_os == "windows" {
         let includes_windows = &[
-            format!("{path}/src/include/port/win32/"),
-            format!("{path}/src/include/port/win32_msvc/"),
+            psql_include_path.join("port").join("win32"),
+            psql_include_path.join("port").join("win32_msvc"),
         ];
         [base_includes, includes_windows].concat()
     } else {
@@ -276,7 +284,8 @@ fn main() {
 
     // Add includes for openssl (if required)
     if use_openssl {
-        includes.push(env::var("DEP_OPENSSL_INCLUDE").unwrap());
+        let openssl_include_path = PathBuf::from(env::var("DEP_OPENSSL_INCLUDE").unwrap());
+        includes.push(openssl_include_path);
     }
 
     // Create "compiler" and add previously determined includes
@@ -341,37 +350,34 @@ fn main() {
     // Note: The compilation will output to $OUT_DIR/libpq.a
     basic_build
         .files(
-            (libports.map(|p| format!("{path}{port_path}{p}")))
-                .chain(libcommon.map(|p| format!("{path}{common_path}{p}")))
-                .chain(libpq.map(|p| format!("{path}{pq_path}{p}"))),
+            libports
+                .map(|p| port_path.join(p))
+                .chain(libcommon.map(|p| common_path.join(p)))
+                .chain(libpq.map(|p| libpq_path.join(p))),
         )
         .compile("pq");
 
     // Directory that shall hold the relevant headers for next step(s)
     let include_path = PathBuf::from(&out).join("include");
-    // Path to libpq module inside PostgreSQL source code
-    let lib_pq_path = PathBuf::from(format!("{path}/{pq_path}"));
-    // Path to includes within postgres source code
-    let postgres_include_path = PathBuf::from(format!("{path}src/include"));
-    // Path to additional includes that are shipped with pq-src
-    let additional_includes_path = PathBuf::from(format!("{crate_dir}/additional_include"));
+    // Same as include_path, but for postgres internals
+    let postgres_internal_path = include_path.join("postgres").join("internal");
+
+    // Create out/include/postgres/internal directory (incl. parent directories)
+    fs::create_dir_all(&postgres_internal_path).expect("Failed to create include directory");
 
     // Copy over relevant headers for next step(s)
-    fs::create_dir_all(&include_path).expect("Failed to create include directory");
-    fs::create_dir_all(include_path.join("postgres").join("internal"))
-        .expect("Failed to create include directory");
     fs::copy(
-        lib_pq_path.join("libpq-fe.h"),
+        libpq_path.join("libpq-fe.h"),
         include_path.join("libpq-fe.h"),
     )
     .expect("Copying headers failed");
     fs::copy(
-        lib_pq_path.join("libpq-events.h"),
+        libpq_path.join("libpq-events.h"),
         include_path.join("libpq-events.h"),
     )
     .expect("Copying headers failed");
     fs::copy(
-        postgres_include_path.join("postgres_ext.h"),
+        psql_include_path.join("postgres_ext.h"),
         include_path.join("postgres_ext.h"),
     )
     .expect("Copying headers failed");
@@ -382,30 +388,21 @@ fn main() {
     .expect("Copying headers failed");
 
     fs::copy(
-        lib_pq_path.join("libpq-int.h"),
-        include_path
-            .join("postgres")
-            .join("internal")
-            .join("libpq-int.h"),
+        libpq_path.join("libpq-int.h"),
+        postgres_internal_path.join("libpq-int.h"),
     )
     .expect("Copying headers failed");
     fs::copy(
-        lib_pq_path.join("fe-auth-sasl.h"),
-        include_path
-            .join("postgres")
-            .join("internal")
-            .join("fe-auth-sasl.h"),
+        libpq_path.join("fe-auth-sasl.h"),
+        postgres_internal_path.join("fe-auth-sasl.h"),
     )
     .expect("Copying headers failed");
     fs::copy(
-        lib_pq_path.join("pqexpbuffer.h"),
-        include_path
-            .join("postgres")
-            .join("internal")
-            .join("pqexpbuffer.h"),
+        libpq_path.join("pqexpbuffer.h"),
+        postgres_internal_path.join("pqexpbuffer.h"),
     )
     .expect("Copying headers failed");
 
     println!("cargo:include={out}/include");
-    println!("cargo:lib_dir={}", out);
+    println!("cargo:lib_dir={out}");
 }

@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::{env, fs};
 
 // If you update this file list also
@@ -234,59 +234,17 @@ fn main() {
     }
 
     // Select port header based on target OS
-    if !temp_include.join("pg_config_os.h").exists() {
-        match target_os.as_str() {
-            "linux" => {
-                fs::copy(
-                    psql_include_path.join("port/linux.h"),
-                    temp_include.join("pg_config_os.h"),
-                )
-                .unwrap();
-            }
-            "macos" => {
-                fs::copy(
-                    psql_include_path.join("port/darwin.h"),
-                    temp_include.join("pg_config_os.h"),
-                )
-                .unwrap();
-            }
-            "windows" => {
-                fs::copy(
-                    psql_include_path.join("port/win32.h"),
-                    temp_include.join("pg_config_os.h"),
-                )
-                .unwrap();
-                println!("cargo:rustc-link-lib=Secur32");
-                println!("cargo:rustc-link-lib=Shell32");
-            }
-            _ => unimplemented(),
-        }
-    }
+    configure_os_headers(&target_os, &psql_include_path, &temp_include);
 
-    // Include paths for all builds
-    let base_includes = &[
-        port_path.clone(),
-        psql_include_path.clone(),
-        additional_includes_path.clone(),
-        temp_include.clone(),
-    ][..];
-
-    // Add additional include paths for windows builds
-    let mut includes = if target_os == "windows" {
-        let includes_windows = &[
-            psql_include_path.join("port").join("win32"),
-            psql_include_path.join("port").join("win32_msvc"),
-        ];
-        [base_includes, includes_windows].concat()
-    } else {
-        base_includes.to_vec()
-    };
-
-    // Add includes for openssl (if required)
-    if use_openssl {
-        let openssl_include_path = PathBuf::from(env::var("DEP_OPENSSL_INCLUDE").unwrap());
-        includes.push(openssl_include_path);
-    }
+    // Collect necessary include paths
+    let includes = collect_include_paths(
+        &target_os,
+        &port_path,
+        &psql_include_path,
+        &additional_includes_path,
+        &temp_include,
+        use_openssl,
+    );
 
     // Create "compiler" and add previously determined includes
     let mut basic_build = cc::Build::new();
@@ -405,4 +363,56 @@ fn main() {
 
     println!("cargo:include={out}/include");
     println!("cargo:lib_dir={out}");
+}
+
+fn configure_os_headers(target_os: &str, psql_include_path: &Path, temp_include: &Path) {
+    let dest = temp_include.join("pg_config_os.h");
+    if dest.exists() {
+        return;
+    }
+
+    let src = match target_os {
+        "linux" => psql_include_path.join("port/linux.h"),
+        "macos" => psql_include_path.join("port/darwin.h"),
+        "windows" => psql_include_path.join("port/win32.h"),
+        _ => unimplemented(),
+    };
+
+    fs::copy(src, dest).unwrap();
+}
+
+fn collect_include_paths(
+    target_os: &str,
+    port_path: &Path,
+    psql_include_path: &Path,
+    additional_includes_path: &Path,
+    temp_include: &Path,
+    use_openssl: bool,
+) -> Vec<PathBuf> {
+    // Include paths for all builds
+    let mut includes = vec![
+        port_path.to_path_buf(),
+        psql_include_path.to_path_buf(),
+        additional_includes_path.to_path_buf(),
+        temp_include.to_path_buf(),
+    ];
+
+    if target_os == "windows" {
+        // Add additional include paths for windows builds...
+        includes.push(psql_include_path.join("port/win32"));
+        includes.push(psql_include_path.join("port/win32_msvc"));
+        // .... and tell cargo to link against the windows system libraries
+        println!("cargo:rustc-link-lib=Secur32");
+        println!("cargo:rustc-link-lib=Shell32");
+    }
+
+    if use_openssl {
+        let openssl_include = PathBuf::from(
+            env::var("DEP_OPENSSL_INCLUDE")
+                .expect("DEP_OPENSSL_INCLUDE must be set when using OpenSSL"),
+        );
+        includes.push(openssl_include);
+    }
+
+    includes
 }

@@ -183,13 +183,15 @@ make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
 
 fn check_compiles(test: &str, mut command: cc::Build) -> bool {
     // Add necessary compiler-flags to make sure that undefined functions actually cause errors
+    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
     let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
-    match target_env.as_str() {
-        "msvc" => {
+    match (target_env.as_str(), target_os.as_str()) {
+        ("msvc", _) => {
             // MSVC: Make C4013 (implicit function declaration) an error
             command.flag("/we4013");
         }
-        "gnu" | "musl" => {
+        ("gnu" | "musl", _) | ("", "macos") => {
+            // NOTE: MacOS has no toolchain environment, so "" is used
             // NOTE: This code assumes that GCC or Clang (where this flag is present) is used.
             // NOTE: Starting with GCC 14 and Clang 16, this is default behaviour.
             // See:

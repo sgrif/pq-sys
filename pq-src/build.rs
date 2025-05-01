@@ -257,33 +257,19 @@ fn main() {
         basic_build.flag("-fsanitize=address");
     }
 
-    // Add necessary defines based on OS and collect OS-specific files for compilation
+    // Add necessary defines
+    add_defines(&target_os, use_openssl, &mut basic_build);
+
+    // Collect OS-specific files for compilation
     let (libports_os, libcommon_os, libpq_os) = match target_os.as_str() {
-        "linux" => {
-            basic_build.define("_GNU_SOURCE", None);
-            (LIBPORTS_LINUX, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS)
-        }
-        "macos" => {
-            // something is broken in homebrew
-            // https://github.com/Homebrew/legacy-homebrew/pull/23620
-            basic_build.define("_FORTIFY_SOURCE", Some("0"));
-            (LIBPORTS_MACOS, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS)
-        }
-        "windows" => {
-            basic_build.define("WIN32", None);
-            basic_build.define("_WINDOWS", None);
-            basic_build.define("__WIN32__", None);
-            basic_build.define("__WINDOWS__", None);
-            basic_build.define("HAVE_SOCKLEN_T", Some("1"));
-            (LIBPORTS_WINDOWS, LIBCOMMON_WINDOWS, LIBPQ_WINDOWS)
-        }
+        "linux" => (LIBPORTS_LINUX, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS),
+        "macos" => (LIBPORTS_MACOS, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS),
+        "windows" => (LIBPORTS_WINDOWS, LIBCOMMON_WINDOWS, LIBPQ_WINDOWS),
         _ => unimplemented(),
     };
 
-    // Add defines for openssl (if needed) and collect files for compilation
+    // Add files for openssl if needed
     let (libcommon, libpq) = if use_openssl {
-        // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
-        basic_build.define("USE_OPENSSL", "1");
         (
             [LIBCOMMON_BASE, LIBCOMMON_OPENSSL].concat(),
             [LIBPQ_BASE, LIBPQ_OPENSSL].concat(),
@@ -415,4 +401,30 @@ fn collect_include_paths(
     }
 
     includes
+}
+
+fn add_defines(os: &str, use_openssl: bool, build: &mut cc::Build) {
+    match os {
+        "linux" => {
+            build.define("_GNU_SOURCE", None);
+        }
+        "macos" => {
+            // something is broken in homebrew
+            // https://github.com/Homebrew/legacy-homebrew/pull/23620
+            build.define("_FORTIFY_SOURCE", Some("0"));
+        }
+        "windows" => {
+            build.define("WIN32", None);
+            build.define("_WINDOWS", None);
+            build.define("__WIN32__", None);
+            build.define("__WINDOWS__", None);
+            build.define("HAVE_SOCKLEN_T", Some("1"));
+        }
+        _ => unimplemented(),
+    }
+
+    if use_openssl {
+        // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
+        build.define("USE_OPENSSL", "1");
+    }
 }

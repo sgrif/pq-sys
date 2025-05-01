@@ -156,11 +156,15 @@ const LIBPQ_NOT_WINDOWS: &[&str] = &[];
 // the Cargo.toml file
 const LIBPQ_WINDOWS: &[&str] = &["fe-secure.c", "pthread-win32.c", "win32.c"];
 
-fn unimplemented() -> ! {
+fn unimplemented(os: &str, env: &str) -> ! {
     unimplemented!(
-        "Building a bundled version of libpq is currently not supported for this OS\n\
+        "Building a bundled version of libpq is currently not supported for this combination of \
+        OS and toolchain environment.\n\
+        Target OS: '{}', Target Environment: '{}'\n\
         If you are interested in support for using a bundled libpq we are happy to accept patches \
-        at https://github.com/sgrif/pq-sys/"
+        at https://github.com/sgrif/pq-sys/",
+        os,
+        env
     );
 }
 
@@ -199,7 +203,7 @@ fn check_compiles(test: &str, mut command: cc::Build) -> bool {
             //   - https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
             command.flag("-Werror=implicit-function-declaration");
         }
-        _ => unimplemented(),
+        _ => unimplemented(&target_os, &target_env),
     }
 
     // Write test.c file, try to compile it and return result
@@ -320,7 +324,7 @@ fn configure_os_headers(target_os: &str, psql_include_path: &Path, temp_include:
         "linux" => psql_include_path.join("port/linux.h"),
         "macos" => psql_include_path.join("port/darwin.h"),
         "windows" => psql_include_path.join("port/win32.h"),
-        _ => unimplemented(),
+        _ => unimplemented(target_os, "any"),
     };
 
     fs::copy(src, dest).unwrap();
@@ -379,7 +383,7 @@ fn add_defines(os: &str, use_openssl: bool, build: &mut cc::Build) {
             build.define("__WINDOWS__", None);
             build.define("HAVE_SOCKLEN_T", Some("1"));
         }
-        _ => unimplemented(),
+        _ => unimplemented(os, "any"),
     }
 
     if use_openssl {
@@ -396,7 +400,7 @@ fn collect_sources(
         "linux" => [LIBPORTS_BASE, LIBPORTS_LINUX].concat(),
         "macos" => [LIBPORTS_BASE, LIBPORTS_MACOS].concat(),
         "windows" => [LIBPORTS_BASE, LIBPORTS_WINDOWS].concat(),
-        _ => unimplemented(),
+        _ => unimplemented(os, "any"),
     };
 
     let common = match (os, use_openssl) {
@@ -408,7 +412,7 @@ fn collect_sources(
         ("linux" | "macos", false) => {
             [LIBCOMMON_BASE, LIBCOMMON_NOT_OPENSSL, LIBCOMMON_NOT_WINDOWS].concat()
         }
-        (_, _) => unimplemented(),
+        (_, _) => unimplemented(os, "any"),
     };
 
     let pq = match (os, use_openssl) {
@@ -416,7 +420,7 @@ fn collect_sources(
         ("windows", false) => [LIBPQ_BASE, LIBPQ_WINDOWS].concat(),
         ("linux" | "macos", true) => [LIBPQ_BASE, LIBPQ_OPENSSL, LIBPQ_NOT_WINDOWS].concat(),
         ("linux" | "macos", false) => [LIBPQ_BASE, LIBPQ_NOT_WINDOWS].concat(),
-        (_, _) => unimplemented(),
+        (_, _) => unimplemented(os, "any"),
     };
 
     (ports, common, pq)

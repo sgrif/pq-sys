@@ -181,11 +181,31 @@ int main() {"#,
 make_test_for!(TEST_FOR_STRCHRNUL, r#"strchrnul("", 42);"#);
 make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
 
-fn check_compiles(test: &str) -> bool {
-    let test_path = std::env::var("OUT_DIR").expect("Set by cargo") + "/test.c";
-    std::fs::write(&test_path, &test).expect("Failed to write test");
-    let r = cc::Build::new().file(&test_path).try_compile("test");
-    std::fs::remove_file(test_path).expect("Failed to remove test file");
+fn check_compiles(test: &str, mut command: cc::Build) -> bool {
+    // Add necessary compiler-flags to make sure that undefined functions actually cause errors
+    let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
+    match target_env.as_str() {
+        "msvc" => {
+            // MSVC: Make C4013 (implicit function declaration) an error
+            command.flag("/we4013");
+        }
+        "gnu" | "musl" => {
+            // NOTE: This code assumes that GCC or Clang (where this flag is present) is used.
+            // NOTE: Starting with GCC 14 and Clang 16, this is default behaviour.
+            // See:
+            //   - https://gcc.gnu.org/gcc-14/porting_to.html#implicit-function-declaration
+            //   - https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
+            command.flag("-Werror=implicit-function-declaration");
+        }
+        _ => unimplemented(),
+    }
+
+    // Write test.c file, try to compile it and return result
+    let out = PathBuf::from(env::var("OUT_DIR").expect("Set by cargo"));
+    let test_path = out.join("test.c");
+    fs::write(&test_path, test).expect("Failed to write test");
+    let r = command.file(&test_path).try_compile("test");
+    fs::remove_file(test_path).expect("Failed to remove test file");
     if let Err(ref e) = r {
         println!("{e}");
     }
@@ -193,7 +213,8 @@ fn check_compiles(test: &str) -> bool {
 }
 
 fn conditional_define(test: &str, define: &str, command: &mut cc::Build) {
-    if check_compiles(test) {
+    // Pass copy of command to not modify original one
+    if check_compiles(test, command.clone()) {
         command.define(define, None);
     }
 }
@@ -208,7 +229,7 @@ fn main() {
     // === Get and define various paths ===
 
     // Path to pq-src (where this build.rs is located)
-    let crate_dir = std::env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
+    let crate_dir = env::var("CARGO_MANIFEST_DIR").expect("Set by cargo");
     // Path to where this build script shall place it's output
     let out = env::var("OUT_DIR").expect("Set by cargo");
 

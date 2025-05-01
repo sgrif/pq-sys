@@ -275,51 +275,13 @@ fn main() {
         .files(libpq.iter().map(|f| libpq_path.join(f)))
         .compile("pq");
 
-    // Directory that shall hold the relevant headers for next step(s)
-    let include_path = PathBuf::from(&out).join("include");
-    // Same as include_path, but for postgres internals
-    let postgres_internal_path = include_path.join("postgres").join("internal");
-
-    // Create out/include/postgres/internal directory (incl. parent directories)
-    fs::create_dir_all(&postgres_internal_path).expect("Failed to create include directory");
-
     // Copy over relevant headers for next step(s)
-    fs::copy(
-        libpq_path.join("libpq-fe.h"),
-        include_path.join("libpq-fe.h"),
-    )
-    .expect("Copying headers failed");
-    fs::copy(
-        libpq_path.join("libpq-events.h"),
-        include_path.join("libpq-events.h"),
-    )
-    .expect("Copying headers failed");
-    fs::copy(
-        psql_include_path.join("postgres_ext.h"),
-        include_path.join("postgres_ext.h"),
-    )
-    .expect("Copying headers failed");
-    fs::copy(
-        additional_includes_path.join("pg_config_ext.h"),
-        include_path.join("pg_config_ext.h"),
-    )
-    .expect("Copying headers failed");
-
-    fs::copy(
-        libpq_path.join("libpq-int.h"),
-        postgres_internal_path.join("libpq-int.h"),
-    )
-    .expect("Copying headers failed");
-    fs::copy(
-        libpq_path.join("fe-auth-sasl.h"),
-        postgres_internal_path.join("fe-auth-sasl.h"),
-    )
-    .expect("Copying headers failed");
-    fs::copy(
-        libpq_path.join("pqexpbuffer.h"),
-        postgres_internal_path.join("pqexpbuffer.h"),
-    )
-    .expect("Copying headers failed");
+    copy_headers(
+        &libpq_path,
+        &psql_include_path,
+        &additional_includes_path,
+        &out,
+    );
 
     println!("cargo:include={out}/include");
     println!("cargo:lib_dir={out}");
@@ -435,4 +397,42 @@ fn collect_sources(
     };
 
     (ports, common, pq)
+}
+
+fn copy_headers(
+    libpq_path: &Path,
+    psql_include_path: &Path,
+    additional_includes_path: &Path,
+    out: &str,
+) {
+    // Directory that shall hold the relevant headers for next step(s)
+    let include_path = PathBuf::from(out).join("include");
+    // Same as include_path, but for postgres internals
+    let postgres_internal_path = include_path.join("postgres").join("internal");
+
+    fs::create_dir_all(&postgres_internal_path).expect("Failed to create include directory");
+
+    let headers_to_copy = [
+        // (source_dir, filename, is_internal)
+        (libpq_path, "libpq-fe.h", false),
+        (libpq_path, "libpq-events.h", false),
+        (psql_include_path, "postgres_ext.h", false),
+        (additional_includes_path, "pg_config_ext.h", false),
+        (libpq_path, "libpq-int.h", true),
+        (libpq_path, "fe-auth-sasl.h", true),
+        (libpq_path, "pqexpbuffer.h", true),
+    ];
+
+    for (src_dir, filename, is_internal) in headers_to_copy {
+        let src = src_dir.join(filename);
+        let dest = if is_internal {
+            postgres_internal_path.join(filename)
+        } else {
+            include_path.join(filename)
+        };
+
+        fs::copy(&src, &dest).unwrap_or_else(|_| {
+            panic!("Failed to copy {:?} to {:?}", src, dest);
+        });
+    }
 }

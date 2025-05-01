@@ -260,45 +260,19 @@ fn main() {
     // Add necessary defines
     add_defines(&target_os, use_openssl, &mut basic_build);
 
-    // Collect OS-specific files for compilation
-    let (libports_os, libcommon_os, libpq_os) = match target_os.as_str() {
-        "linux" => (LIBPORTS_LINUX, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS),
-        "macos" => (LIBPORTS_MACOS, LIBCOMMON_NOT_WINDOWS, LIBPQ_NOT_WINDOWS),
-        "windows" => (LIBPORTS_WINDOWS, LIBCOMMON_WINDOWS, LIBPQ_WINDOWS),
-        _ => unimplemented(),
-    };
-
-    // Add files for openssl if needed
-    let (libcommon, libpq) = if use_openssl {
-        (
-            [LIBCOMMON_BASE, LIBCOMMON_OPENSSL].concat(),
-            [LIBPQ_BASE, LIBPQ_OPENSSL].concat(),
-        )
-    } else {
-        (
-            [LIBCOMMON_BASE, LIBCOMMON_NOT_OPENSSL].concat(),
-            LIBPQ_BASE.to_vec(),
-        )
-    };
+    // Collect files for compilation
+    let (libports, libcommon, libpq) = collect_sources(&target_os, use_openssl);
 
     // Check if strchrnul and/or strsignal are supported, if so add defines for them
     conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
     conditional_define(TEST_FOR_STRSIGNAL, "HAVE_STRSIGNAL", &mut basic_build);
 
-    // Collect files for compilation
-    let libports = LIBPORTS_BASE.iter().chain(libports_os);
-    let libcommon = libcommon.iter().chain(libcommon_os);
-    let libpq = libpq.iter().chain(libpq_os);
-
     // Compile code into statically linked library
     // Note: The compilation will output to $OUT_DIR/libpq.a
     basic_build
-        .files(
-            libports
-                .map(|p| port_path.join(p))
-                .chain(libcommon.map(|p| common_path.join(p)))
-                .chain(libpq.map(|p| libpq_path.join(p))),
-        )
+        .files(libports.iter().map(|f| port_path.join(f)))
+        .files(libcommon.iter().map(|f| common_path.join(f)))
+        .files(libpq.iter().map(|f| libpq_path.join(f)))
         .compile("pq");
 
     // Directory that shall hold the relevant headers for next step(s)
@@ -427,4 +401,38 @@ fn add_defines(os: &str, use_openssl: bool, build: &mut cc::Build) {
         // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
         build.define("USE_OPENSSL", "1");
     }
+}
+
+fn collect_sources(
+    os: &str,
+    use_openssl: bool,
+) -> (Vec<&'static str>, Vec<&'static str>, Vec<&'static str>) {
+    let ports = match os {
+        "linux" => [LIBPORTS_BASE, LIBPORTS_LINUX].concat(),
+        "macos" => [LIBPORTS_BASE, LIBPORTS_MACOS].concat(),
+        "windows" => [LIBPORTS_BASE, LIBPORTS_WINDOWS].concat(),
+        _ => unimplemented(),
+    };
+
+    let common = match (os, use_openssl) {
+        ("windows", true) => [LIBCOMMON_BASE, LIBCOMMON_OPENSSL, LIBCOMMON_WINDOWS].concat(),
+        ("windows", false) => [LIBCOMMON_BASE, LIBCOMMON_NOT_OPENSSL, LIBCOMMON_WINDOWS].concat(),
+        ("linux" | "macos", true) => {
+            [LIBCOMMON_BASE, LIBCOMMON_OPENSSL, LIBCOMMON_NOT_WINDOWS].concat()
+        }
+        ("linux" | "macos", false) => {
+            [LIBCOMMON_BASE, LIBCOMMON_NOT_OPENSSL, LIBCOMMON_NOT_WINDOWS].concat()
+        }
+        (_, _) => unimplemented(),
+    };
+
+    let pq = match (os, use_openssl) {
+        ("windows", true) => [LIBPQ_BASE, LIBPQ_OPENSSL, LIBPQ_WINDOWS].concat(),
+        ("windows", false) => [LIBPQ_BASE, LIBPQ_WINDOWS].concat(),
+        ("linux" | "macos", true) => [LIBPQ_BASE, LIBPQ_OPENSSL, LIBPQ_NOT_WINDOWS].concat(),
+        ("linux" | "macos", false) => [LIBPQ_BASE, LIBPQ_NOT_WINDOWS].concat(),
+        (_, _) => unimplemented(),
+    };
+
+    (ports, common, pq)
 }

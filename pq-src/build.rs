@@ -160,11 +160,9 @@ fn unimplemented(os: &str, env: &str) -> ! {
     unimplemented!(
         "Building a bundled version of libpq is currently not supported for this combination of \
         OS and toolchain environment.\n\
-        Target OS: '{}', Target Environment: '{}'\n\
+        Target OS: '{os}', Target Environment: '{env}'\n\
         If you are interested in support for using a bundled libpq we are happy to accept patches \
-        at https://github.com/sgrif/pq-sys/",
-        os,
-        env
+        at https://github.com/sgrif/pq-sys/"
     );
 }
 
@@ -187,33 +185,30 @@ make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
 
 fn check_compiles(test: &str, mut command: cc::Build) -> bool {
     // Add necessary compiler-flags to make sure that undefined functions actually cause errors
-    let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
-    let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
-    match (target_env.as_str(), target_os.as_str()) {
-        ("msvc", _) => {
-            // MSVC: Make C4013 (implicit function declaration) an error
-            command.flag("/we4013");
-        }
-        ("gnu" | "musl", _) | ("", "macos") => {
-            // NOTE: MacOS has no toolchain environment, so "" is used
-            // NOTE: This code assumes that GCC or Clang (where this flag is present) is used.
-            // NOTE: Starting with GCC 14 and Clang 16, this is default behaviour.
-            // See:
-            //   - https://gcc.gnu.org/gcc-14/porting_to.html#implicit-function-declaration
-            //   - https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
-            command.flag("-Werror=implicit-function-declaration");
-        }
-        _ => unimplemented(&target_os, &target_env),
-    }
+    // NOTE: Starting with GCC 14 and Clang 16, this is default behaviour.
+    // See:
+    //   - https://gcc.gnu.org/gcc-14/porting_to.html#implicit-function-declaration
+    //   - https://releases.llvm.org/16.0.0/tools/clang/docs/ReleaseNotes.html#potentially-breaking-changes
+    command
+        .flag_if_supported("-Werror=implicit-function-declaration") // GCC/Clang
+        .flag_if_supported("/we4013"); // MSVC
+
+    // Do not emit metadata for linking
+    // NOTE: This allows libtest.a to be removed after the compilation,
+    //       otherwise cargo would link against it
+    command.cargo_metadata(false);
 
     // Write test.c file, try to compile it and return result
     let out = PathBuf::from(env::var("OUT_DIR").expect("Set by cargo"));
     let test_path = out.join("test.c");
-    fs::write(&test_path, test).expect("Failed to write test");
+    fs::write(&test_path, test).expect("Failed to write test file");
     let r = command.file(&test_path).try_compile("test");
     fs::remove_file(test_path).expect("Failed to remove test file");
     if let Err(ref e) = r {
         println!("{e}");
+    } else {
+        // Clean up temporary compilation result
+        fs::remove_file(out.join("libtest.a")).expect("Failed to remove test compilation result");
     }
     r.is_ok()
 }
@@ -302,7 +297,7 @@ fn main() {
         .files(libpq.iter().map(|f| libpq_path.join(f)))
         .compile("pq");
 
-    // Copy over relevant headers for next step(s)
+    // Copy over relevant headers for crates that depend on pq-sys/src
     copy_headers(
         &libpq_path,
         &psql_include_path,
@@ -310,6 +305,7 @@ fn main() {
         &out,
     );
 
+    // Emit metadata to set environment variables for dependants
     println!("cargo:include={out}/include");
     println!("cargo:lib_dir={out}");
 }
@@ -432,7 +428,7 @@ fn copy_headers(
     additional_includes_path: &Path,
     out: &str,
 ) {
-    // Directory that shall hold the relevant headers for next step(s)
+    // Directory that shall hold the relevant headers for dependants
     let include_path = PathBuf::from(out).join("include");
     // Same as include_path, but for postgres internals
     let postgres_internal_path = include_path.join("postgres").join("internal");

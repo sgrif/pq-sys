@@ -223,6 +223,7 @@ fn conditional_define(test: &str, define: &str, command: &mut cc::Build) {
 fn main() {
     // Get build information from environment
     let target_os = env::var("CARGO_CFG_TARGET_OS").unwrap();
+    let target_env = env::var("CARGO_CFG_TARGET_ENV").unwrap();
     let use_openssl = env::var("CARGO_FEATURE_WITH_OPENSSL").is_ok();
 
     println!("cargo:rerun-if-changed=additional_include");
@@ -280,7 +281,7 @@ fn main() {
     }
 
     // Add necessary defines
-    add_defines(&target_os, use_openssl, &mut basic_build);
+    add_defines(&target_os, &target_env, use_openssl, &mut basic_build);
 
     // Collect files for compilation
     let (libports, libcommon, libpq) = collect_sources(&target_os, use_openssl);
@@ -362,7 +363,7 @@ fn collect_include_paths(
     includes
 }
 
-fn add_defines(os: &str, use_openssl: bool, build: &mut cc::Build) {
+fn add_defines(os: &str, env: &str, use_openssl: bool, build: &mut cc::Build) {
     match os {
         "linux" => {
             build.define("_GNU_SOURCE", None);
@@ -379,7 +380,21 @@ fn add_defines(os: &str, use_openssl: bool, build: &mut cc::Build) {
             build.define("__WINDOWS__", None);
             build.define("HAVE_SOCKLEN_T", Some("1"));
         }
-        _ => unimplemented(os, "any"),
+        _ => unimplemented(os, env),
+    }
+
+    match env {
+        "musl" => {
+            build.define("STRERROR_R_INT", None);
+            build.define("HAVE_TERMIOS_H", None);
+            // This most likely is alread added by linux case above
+            // but we add it here just in case it was not
+            build.define("_GNU_SOURCE", None);
+        }
+        // Nothing to add for GNU, MSVC and MacOS
+        "gnu" | "msvc" => (),
+        "" if os == "macos" => (), // MacOS has no toolchain environment
+        _ => unimplemented(os, env),
     }
 
     if use_openssl {

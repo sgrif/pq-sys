@@ -5,6 +5,11 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.7] 2025-05-09
+
+* Fix builds on alpine linux
+* Update the bundled libpq version to 17.5
+
 ### pq-src [0.3.6] 2025-04-04
 
 * Fix broken builds on MacOS 15.4 by checking for the newly added `strchrnul` function there

@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.8] 2025-05-10
+
+* Fixed libpq version specifier and yanked the 0.3.7 release
+
 ### pq-src [0.3.7] 2025-05-09
 
 * Fix builds on alpine linux

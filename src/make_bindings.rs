@@ -1,4 +1,4 @@
-/* keep in sync with the command in DEVELOPMENT.md */
+/* keep in sync with the command in generate_bindings.sh */
 bindgen::Builder::default()
     .rustified_enum(".*")
     .header("wrapper.h")

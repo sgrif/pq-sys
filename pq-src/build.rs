@@ -182,6 +182,7 @@ int main() {"#,
 
 make_test_for!(TEST_FOR_STRCHRNUL, r#"strchrnul("", 42);"#);
 make_test_for!(TEST_FOR_STRSIGNAL, r#"strsignal(32);"#);
+make_test_for!(TEST_FOR_STRLCPY, r#"strlcpy("", "", 0);"#);
 
 fn check_compiles(test: &str, mut command: cc::Build) -> bool {
     // Add necessary compiler-flags to make sure that undefined functions actually cause errors
@@ -289,6 +290,7 @@ fn main() {
     // Check if strchrnul and/or strsignal are supported, if so add defines for them
     conditional_define(TEST_FOR_STRCHRNUL, "HAVE_STRCHRNUL", &mut basic_build);
     conditional_define(TEST_FOR_STRSIGNAL, "HAVE_STRSIGNAL", &mut basic_build);
+    conditional_define(TEST_FOR_STRLCPY, "HAVE_STRLCPY", &mut basic_build);
 
     // Compile code into statically linked library
     // Note: The compilation will output to $OUT_DIR/libpq.a

@@ -5,6 +5,11 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.2] 2025-06-12
+
+* Bump bindgen to 0.72.0 and regenerate bindings
+* Fixed an issue with bundled builds without openssl on windows due to a breaking upstream rust change 
+
 ### pq-src [0.3.8] 2025-05-10
 
 * Fixed libpq version specifier and yanked the 0.3.7 release

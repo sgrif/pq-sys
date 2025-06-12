@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.7.1"
+version = "0.7.2"
 description = "Auto-generated rust bindings for libpq"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/pq-sys"

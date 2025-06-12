@@ -298,6 +298,13 @@ fn main() {
         .files(libpq.iter().map(|f| libpq_path.join(f)))
         .compile("pq");
 
+    if target_os == "windows" {
+        // .... and tell cargo to link against the windows system libraries
+        println!("cargo:rustc-link-lib=secur32");
+        println!("cargo:rustc-link-lib=shell32");
+        println!("cargo:rustc-link-lib=advapi32");
+    }
+
     // Copy over relevant headers for crates that depend on pq-sys/src
     copy_headers(
         &libpq_path,
@@ -347,9 +354,6 @@ fn collect_include_paths(
         // Add additional include paths for windows builds...
         includes.push(psql_include_path.join("port/win32"));
         includes.push(psql_include_path.join("port/win32_msvc"));
-        // .... and tell cargo to link against the windows system libraries
-        println!("cargo:rustc-link-lib=Secur32");
-        println!("cargo:rustc-link-lib=Shell32");
     }
 
     if use_openssl {

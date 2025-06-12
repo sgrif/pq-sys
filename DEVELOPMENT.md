@@ -1,32 +1,12 @@
 # DEVELOPMENT NOTES
 
-Use the following command to generate a new bindings file:
-```sh
-# keep the command in sync with the command in `src/make_bindings.rs"
-bindgen wrapper.h \
-    --rustified-enum ".*" \
-    --no-derive-default \
-    --generate "functions,types,vars,methods,constructors,destructors" \
-    --allowlist-var "PG_.*" \
-    --allowlist-var "LIBPQ_.*" \
-    --allowlist-var "PQ.*" \
-    --allowlist-type "Oid" \
-    --allowlist-type "ConnStatusType"  \
-    --allowlist-type "Postgres.*" \
-    --allowlist-type "pg.*" \
-    --allowlist-type "PG.*" \
-    --allowlist-type "PQ.*" \
-    --allowlist-type "pq.*" \
-    --allowlist-function "PQ.*" \
-    --allowlist-function "lo_.*" \
-    --allowlist-function "pg_.*" \
-    --opaque-type "FILE" \
-    --blocklist-type "FILE" \
-    --raw-line "use libc::FILE;" \
-    -- -I pq-src/source/src/interfaces/libpq/ -I pq-src/source/src/include/ -I pq-src/additional_include/
-```
 
-It is required to generate bindings for the following targets:
+Bindings were generated with the following steps:
+
+* Start a debian container via `podman run -it --rm -v ./:/target:z debian bash`
+* Run `/target/generate_bindings.sh` inside of the container
+
+The script generates bindings for the following platforms:
 
 * Linux 64 bit
 * Linux 32 bit (different field sizes, compilation fails otherwise due to const checks)

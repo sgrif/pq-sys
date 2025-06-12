@@ -17,6 +17,7 @@ compile_error!(
 
 pub use bindings::*;
 
+#[cfg(not(feature = "buildtime_bindgen"))]
 #[test]
 fn check_generated_bindings_match() {
     let libpq_include_path = concat!(

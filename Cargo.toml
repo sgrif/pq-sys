@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.7.2"
+version = "0.7.3"
 description = "Auto-generated rust bindings for libpq"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/pq-sys"
@@ -31,7 +31,7 @@ similar-asserts = "1.6.0"
 bindgen = "0.72.0"
 
 [features]
-default = []
+default = ["pkg-config"]
 bundled = ["bundled_without_openssl", "pq-src/with-openssl"]
 bundled_without_openssl = ["dep:pq-src"]
 buildtime_bindgen = ["dep:bindgen"]

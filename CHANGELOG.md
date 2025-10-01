@@ -5,7 +5,7 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
-### pq-sys [0.7.4] 2025-xx-xx
+### pq-sys [0.7.4] 2025-10-01
 
 * Update the bundled version of libpq to 18.0
 * Regenerate bindings for the new postgres release

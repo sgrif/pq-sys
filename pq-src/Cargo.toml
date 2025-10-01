@@ -1,6 +1,6 @@
 [package]
 name = "pq-src"
-version = "0.3.9+libpq-17.5"
+version = "0.3.10+libpq-18.0"
 edition = "2021"
 include = [
         "src/**/*.rs",
@@ -46,6 +46,8 @@ include = [
         "source/src/include/common/cryptohash.h",
         "source/src/include/common/scram-common.h",
         "source/src/include/common/sha2.h",
+        "source/src/include/datatype/timestamp.h",
+        "source/src/include/pgtime.h",
         "source/src/common/sha2_int.h",
         "source/src/common/sha1_int.h",
         "source/src/include/common/sha1.h",
@@ -69,7 +71,9 @@ include = [
         "source/src/include/common/unicode_east_asian_fw_table.h",
         "source/src/include/common/restricted_token.h",
         "source/src/include/common/openssl.h",
+        "source/src/include/libpq/pg-gssapi.h",
         "source/src/include/mb/pg_wchar.h",
+        "source/src/include/miscadmin.h",
         "source/src/include/utils/ascii.h",
         "source/src/include/lib/sort_template.h",
         "source/src/include/lib/stringinfo.h",
@@ -186,6 +190,9 @@ include = [
         "source/src/interfaces/libpq/fe-auth-sasl.h",
         "source/src/interfaces/libpq/pqexpbuffer.h",
         "source/src/interfaces/libpq/libpq-events.h",
+        "source/src/include/common/oauth-common.h",
+        "source/src/interfaces/libpq/fe-auth-oauth.h",
+        "source/src/interfaces/libpq/fe-auth-oauth.c",
 ]
 description = "Bundled version of libpq"
 license = "PostgreSQL"

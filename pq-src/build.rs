@@ -31,12 +31,12 @@ const LIBPORTS_BASE: &[&str] = &[
 // If you update this file list also
 // update the list of includes files in
 // the Cargo.toml file
-const LIBPORTS_LINUX: &[&str] = &["getpeereid.c", "user.c"];
+const LIBPORTS_LINUX: &[&str] = &["getpeereid.c"];
 
 // If you update this file list also
 // update the list of includes files in
 // the Cargo.toml file
-const LIBPORTS_MACOS: &[&str] = &["user.c"];
+const LIBPORTS_MACOS: &[&str] = &[];
 
 // If you update this file list also
 // update the list of includes files in
@@ -100,11 +100,7 @@ const LIBCOMMON_BASE: &[&str] = &[
 // If you update this file list also
 // update the list of includes files in
 // the Cargo.toml file
-const LIBCOMMON_OPENSSL: &[&str] = &[
-    "cryptohash_openssl.c",
-    "hmac_openssl.c",
-    "protocol_openssl.c",
-];
+const LIBCOMMON_OPENSSL: &[&str] = &["cryptohash_openssl.c", "hmac_openssl.c"];
 
 // If you update this file list also
 // update the list of includes files in
@@ -136,6 +132,7 @@ const LIBPQ_BASE: &[&str] = &[
     "fe-protocol3.c",
     "fe-secure.c",
     "fe-trace.c",
+    "fe-auth-oauth.c",
     "legacy-pqsignal.c",
     "libpq-events.c",
     "pqexpbuffer.c",

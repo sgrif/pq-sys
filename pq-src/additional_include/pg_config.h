@@ -80,6 +80,11 @@
 #define STRERROR_R_INT 1
 #endif
 
+/* Define to 1 if you have the <xlocale.h> header file. */
+#ifdef __APPLE__
+#define HAVE_XLOCALE_H 1
+#endif
+
 #endif
 
 // windows does not have that header
@@ -168,9 +173,7 @@
 #define PG_VERSION_NUM 160000
 
 /* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR                                                         \
-  "PostgreSQL 16.0 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 13.2.1 "      \
-  "20230728 (Red Hat 13.2.1-1), 64-bit"
+#define PG_VERSION_STR "PostgreSQL 18.0"
 
 /* RELSEG_SIZE is the maximum number of blocks allowed in one disk file. Thus,
    the maximum size of a single file is RELSEG_SIZE * BLCKSZ; relations bigger

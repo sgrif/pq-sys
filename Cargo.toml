@@ -1,6 +1,6 @@
 [package]
 name = "pq-sys"
-version = "0.7.4"
+version = "0.7.5"
 description = "Auto-generated rust bindings for libpq"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/sgrif/pq-sys"
@@ -8,7 +8,7 @@ links = "pq"
 build = "build.rs"
 edition = "2021"
 rust-version = "1.82.0"
-include = ["README.md", "LICENSE-MIT", "LICENSE-APACHE", "src/**/*.rs", "build.rs", "bindings/**/*.rs"]
+include = ["README.md", "LICENSE-MIT", "LICENSE-APACHE", "src/**/*.rs", "build.rs", "bindings/**/*.rs", "wrapper.h"]
 
 [workspace]
 members = ["pq-src"]

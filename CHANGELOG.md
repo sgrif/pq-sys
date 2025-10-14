@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.5] 2025-10-14
+
+* Reinclude the wrapper.h file into the published package as it is needed for buildtime_bindgen based builds.
+
 ### pq-sys [0.7.4] 2025-10-09
 
 * Remove a unneeded shell script from the published package

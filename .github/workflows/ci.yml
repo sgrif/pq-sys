@@ -13,7 +13,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-13, macos-15, windows-2025, ubuntu-22.04-arm]
+        os:
+          [
+            ubuntu-latest,
+            macos-15-intel,
+            macos-15,
+            windows-2025,
+            ubuntu-24.04-arm,
+            windows-11-arm,
+          ]
         features: [default, bundled, bundled_without_openssl, buildtime_bindgen]
     runs-on: ${{ matrix.os }}
     steps:
@@ -31,6 +39,17 @@ jobs:
         run: |
           echo "RUSTFLAGS=-D warnings" >> $GITHUB_ENV
           echo "RUSTDOCFLAGS=-D warnings" >> $GITHUB_ENV
+
+      - name: Set bindgen path (Unix)
+        shell: bash
+        if: runner.os == 'MacOS' || runner.os == 'Linux'
+        run: |
+          echo "BINDGEN_EXTRA_CLANG_ARGS=-I${GITHUB_WORKSPACE}/pq-src/source/src/interfaces/libpq/ -I${GITHUB_WORKSPACE}/pq-src/source/src/include/ -I ${GITHUB_WORKSPACE}/pq-src/additional_include" >> $GITHUB_ENV
+
+      - name: Set bindgen path (Windows)
+        shell: bash
+        if: runner.os == 'Windows'
+        run: |
           echo "BINDGEN_EXTRA_CLANG_ARGS=-I./pq-src/source/src/interfaces/libpq/ -I./pq-src/source/src/include/ -I ./pq-src/additional_include" >> $GITHUB_ENV
 
       - name: Install postgres (Linux)
@@ -38,34 +57,52 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libpq-dev postgresql
-          echo "host    all             all             127.0.0.1/32            md5" > sudo tee -a /etc/postgresql/10/main/pg_hba.conf
-          sudo service postgresql restart && sleep 3
-          sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'postgres';"
-          sudo service postgresql restart && sleep 3
 
-      - name: Install postgres  (MacOS M1)
-        if: (matrix.os == 'macos-15' || matrix.os == 'macos-13') && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+      - name: Install postgres
+        if: runner.os == 'MacOS' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         run: |
           brew update
-          brew install postgresql
-          brew services start postgresql@14
-          sleep 3
-          createuser -s postgres
+          brew install postgresql@18
 
-      - name: Install postgres (Windows)
+      - name: Postgres env (MacOS M1)
+        if: matrix.os == 'macos-15' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        run: |
+          echo "PQ_LIB_DIR=/opt/homebrew/opt/postgresql@18/lib/postgresql" >> $GITHUB_ENV
+
+      - name: Postgres env (MacOS Intel)
+        if: matrix.os == 'macos-15-intel' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        run: |
+          echo "PQ_LIB_DIR=/usr/local/opt/postgresql@18/lib/postgresql" >> $GITHUB_ENV
+
+      - name: Install LibPQ
         if: runner.os == 'Windows' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV
+          vcpkg install libpq[core]
+
+      - name: LibPQ config (Windows x86-64)
+        if: matrix.os == 'windows-2025' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
         shell: bash
         run: |
-          choco install postgresql12 --force --params '/Password:root'
-          echo "C:\Program Files\PostgreSQL\12\bin" >> $GITHUB_PATH
-          echo "C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_PATH
-          echo "PQ_LIB_DIR=C:\Program Files\PostgreSQL\12\lib" >> $GITHUB_ENV
+          echo "PQ_LIB_DIR=C:\\vcpkg\\packages\\libpq_x64-windows\\lib" >> $GITHUB_ENV
 
-      - name: Windows setup (bundled)
-        if: runner.os == 'Windows' && matrix.features == 'bundled'
+      - name: LibPQ config (Windows ARM)
+        if: matrix.os == 'windows-11-arm' && matrix.features != 'bundled' && matrix.features != 'bundled_without_openssl'
+        shell: bash
+        run: |
+          echo "PQ_LIB_DIR=C:\\vcpkg\\packages\\libpq_arm64-windows\\lib" >> $GITHUB_ENV
+
+      - name: Windows setup (bundled, x86-64)
+        if: matrix.os == 'windows-2025' && matrix.features == 'bundled'
         run: |
           echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV
           vcpkg install openssl:x64-windows-static-md
+
+      - name: Windows setup (bundled, ARM)
+        if: matrix.os == 'windows-11-arm' && matrix.features == 'bundled'
+        run: |
+          echo "VCPKG_ROOT=$env:VCPKG_INSTALLATION_ROOT" | Out-File -FilePath $env:GITHUB_ENV
+          vcpkg install openssl:arm64-windows-static-md
 
       - name: Remove openssl (Linux, bundled_without_openssl)
         if: runner.os == 'Linux' && matrix.features == 'bundled_without_openssl'
@@ -84,8 +121,10 @@ jobs:
         shell: bash
         run: |
           cargo check --no-default-features --features "${{ matrix.features }}"
+
       - name: Tests
         shell: bash
+        if: matrix.os != 'windows-11-arm'
         run: |
           cargo test --no-default-features --features "${{ matrix.features }}"
 
@@ -96,7 +135,7 @@ jobs:
           cargo new test_diesel
           cd test_diesel
           echo "[workspace]" >> Cargo.toml
-          cargo add diesel --no-default-features --features "postgres" --git "https://github.com/diesel-rs/diesel" --branch master
+          cargo add diesel --no-default-features --features "postgres" --git "https://github.com/diesel-rs/diesel" --branch main
           cargo add pq-sys
           echo "[patch.crates-io]" >> Cargo.toml
           echo "pq-sys = { path = \"..\" }" >> Cargo.toml
@@ -104,20 +143,26 @@ jobs:
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { PgConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
           cargo build --features "pq-sys/${{ matrix.features }}"
+          cd ..
+          rm -rf test_diesel
+          git reset HEAD --hard
 
       - name: Test all files included
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          cargo package --no-default-features -F ${{ matrix.features }}
+
+      - name: Test all files included (pq-src)
         shell: bash
         if: matrix.features == 'bundled'
         run: |
-          rm -rf test_diesel
-          git reset --hard HEAD
           cd pq-src
           cargo publish --dry-run
+
       - name: Test all files included (without openssl)
         shell: bash
         if: matrix.features == 'bundled_without_openssl'
         run: |
-          rm -rf test_diesel
-          git reset --hard HEAD
           cd pq-src
           cargo publish --dry-run --no-default-features

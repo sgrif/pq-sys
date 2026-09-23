@@ -6,6 +6,21 @@ on:
       - master
 
 name: CI Tests
+permissions:
+  contents: "read"
+env:
+  CARGO_NET_RETRY: 10
+  RUSTUP_MAX_RETRIES: 10
+  # Force HTTP/1.1 for crates.io downloads: HTTP/2 multiplexing against the
+  # CDN intermittently drops connections mid-stream (SSL "unexpected eof"),
+  # and cargo does not retry those, so CARGO_NET_RETRY alone cannot recover.
+  CARGO_HTTP_MULTIPLEXING: "false"
+
+# See: https://docs.github.com/en/actions/reference/workflow-syntax-for-github-actions#concurrency.
+# This will ensure that only one commit will be running tests at a time on each PR.
+concurrency:
+  group: ${{ github.ref }}-${{ github.workflow }}
+  cancel-in-progress: true
 
 jobs:
   check_and_test:
@@ -26,11 +41,12 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
         with:
+          persist-credentials: false
           submodules: recursive
       - name: Cache cargo registry
-        uses: Swatinem/rust-cache@v2
+        uses: Swatinem/rust-cache@f51f967e158417aafa338a1e46ab22095f07aa01 # v2.8.2
         with:
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.toml') }}
 
@@ -113,24 +129,31 @@ jobs:
         run: brew uninstall openssl@1.1
 
       - name: Install rust toolchain
-        uses: dtolnay/rust-toolchain@stable
-        with:
-          components: rustfmt
+        run: |
+          rustup update stable
+          rustup override set stable
+          rustup component add rustfmt
 
       - name: Check
         shell: bash
+        env:
+          FEATURES: ${{ matrix.features }}
         run: |
-          cargo check --no-default-features --features "${{ matrix.features }}"
+          cargo check --no-default-features --features "$FEATURES"
 
       - name: Tests
         shell: bash
         if: matrix.os != 'windows-11-arm'
+        env:
+          FEATURES: ${{ matrix.features }}
         run: |
-          cargo test --no-default-features --features "${{ matrix.features }}"
+          cargo test --no-default-features --features "$FEATURES"
 
       - name: Test compile diesel
         shell: bash
         if: matrix.features != 'buildtime_bindgen'
+        env:
+          FEATURES: ${{ matrix.features }}
         run: |
           cargo new test_diesel
           cd test_diesel
@@ -142,7 +165,7 @@ jobs:
           cat Cargo.toml
           echo "use diesel::prelude::*;" > src/main.rs
           echo "fn main() { PgConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
-          cargo build --features "pq-sys/${{ matrix.features }}"
+          cargo build --features "pq-sys/$FEATURES"
           cd ..
           rm -rf test_diesel
           git reset HEAD --hard
@@ -150,8 +173,10 @@ jobs:
       - name: Test all files included
         if: matrix.os == 'ubuntu-latest'
         shell: bash
+        env:
+          FEATURES: ${{ matrix.features }}
         run: |
-          cargo package --no-default-features -F ${{ matrix.features }}
+          cargo package --no-default-features -F "$FEATURES"
 
       - name: Test all files included (pq-src)
         shell: bash

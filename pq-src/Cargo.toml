@@ -50,6 +50,7 @@ include = [
         "source/src/include/pgtime.h",
         "source/src/common/sha2_int.h",
         "source/src/common/sha1_int.h",
+        "source/src/include/common/int.h",
         "source/src/include/common/sha1.h",
         "source/src/include/common/md5.h",
         "source/src/common/md5_int.h",

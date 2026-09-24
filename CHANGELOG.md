@@ -5,6 +5,14 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.6] 2026-09-24
+
+* Fix copying the right bindings on windows-gnu targets
+
+### pq-src [0.3.12] 2026-09-24
+
+* Update bundled version of libpq to 18.6
+
 ### pq-src [0.3.11] 2026-03-02
 
 * Update bundled version of libpq to 18.3

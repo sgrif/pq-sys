@@ -101,16 +101,16 @@ fn main() {
     }
     #[cfg(not(feature = "buildtime_bindgen"))]
     {
-        let target_env = std::env::var("CARGO_CFG_TARGET_ENV").expect("Set by cargo");
+        let is_windows = std::env::var("CARGO_CFG_WINDOWS").is_ok();
         let target_ptr_size =
             std::env::var("CARGO_CFG_TARGET_POINTER_WIDTH").expect("Set by cargo");
-        let bindings_name = match (target_env.as_str(), target_ptr_size.as_str()) {
-            ("msvc", "32") => "src/bindings_windows_32.rs",
-            ("msvc", "64") => "src/bindings_windows.rs",
-            (_, "32") => "src/bindings_linux_32.rs",
-            (_, "64") => "src/bindings_linux.rs",
-            (target_env, ptr_width) => {
-                panic!("Unsupported target: TargetEnv: `{target_env}`, PtrWidth: `{ptr_width}`\n\
+        let bindings_name = match target_ptr_size.as_str() {
+            "32" if is_windows => "src/bindings_windows_32.rs",
+            "64" if is_windows => "src/bindings_windows.rs",
+            "32" => "src/bindings_linux_32.rs",
+            "64" => "src/bindings_linux.rs",
+            ptr_width => {
+                panic!("Unsupported target: PtrWidth: `{ptr_width}`\n\
                         If you use this target open an issue at https://github.com/sgrif/pq-sys/issues/new\
                         outlining the details of this target");
             }

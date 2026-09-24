@@ -5,7 +5,7 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
-### pq-src [0.3.12] 2026-09-24
+### pq-src [0.3.13] 2026-09-24
 
 * Add a missing source file for bundled builds
 

@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.12] 2026-09-24
+
+* Add a missing source file for bundled builds
+
 ### pq-sys [0.7.6] 2026-09-24
 
 * Fix copying the right bindings on windows-gnu targets

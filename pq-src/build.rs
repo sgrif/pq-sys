@@ -26,6 +26,7 @@ const LIBPORTS_BASE: &[&str] = &[
     "strerror.c",
     "tar.c",
     "explicit_bzero.c",
+    "timingsafe_bcmp.c",
 ];
 
 // If you update this file list also

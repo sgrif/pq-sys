@@ -5,6 +5,11 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-src [0.3.14] 2026-10-30
+
+* Fix the version string of the bundled libpq version
+* Fix cross compiling using clang-cl by not assume a built-in inet_aton type on windows
+
 ### pq-src [0.3.13] 2026-09-24
 
 * Add a missing source file for bundled builds

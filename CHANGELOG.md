@@ -5,6 +5,10 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.8] 2026-10-30
+
+* Updated bindgen to 0.73.2 and regenerate bindings
+
 ### pq-src [0.3.14] 2026-10-30
 
 * Fix the version string of the bundled libpq version

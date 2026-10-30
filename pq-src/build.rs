@@ -403,6 +403,28 @@ fn add_defines(os: &str, env: &str, use_openssl: bool, build: &mut cc::Build) {
         // Define to 1 to build with OpenSSL support. (--with-ssl=openssl)
         build.define("USE_OPENSSL", "1");
     }
+    let lib_pq_version = env!("CARGO_PKG_VERSION")
+        .split_once('+')
+        .expect("There is a subversion")
+        .1
+        .strip_prefix("libpq-")
+        .unwrap();
+    let (major_version, minor_version) = lib_pq_version
+        .split_once('.')
+        .expect("The subversion contains the major and minor version");
+    let padding = if minor_version.len() < 2 { "0" } else { "" };
+    build.define("PG_VERSION", format!("\"{lib_pq_version}\"").as_str());
+    build.define(
+        "PG_VERSION_NUM",
+        format!("{major_version}{padding}{minor_version}00").as_str(),
+    );
+    build.define(
+        "PG_VERSION_STR",
+        format!("\"PostgreSQL {lib_pq_version}\"").as_str(),
+    );
+    build.define("PG_MAJORVERSION", format!("\"{major_version}\"").as_str());
+    build.define("PG_MAJORVERSION_NUM", major_version);
+    build.define("PG_MINORVERSION_NUM", minor_version);
 }
 
 fn collect_sources(

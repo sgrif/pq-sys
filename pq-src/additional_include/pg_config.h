@@ -151,29 +151,11 @@
    (GSSAPI). (--with-krb-srvnam=NAME) */
 #define PG_KRB_SRVNAM "postgres"
 
-/* PostgreSQL major version as a string */
-#define PG_MAJORVERSION "16"
-
-/* PostgreSQL major version number */
-#define PG_MAJORVERSION_NUM 16
-
-/* PostgreSQL minor version number */
-#define PG_MINORVERSION_NUM 0
-
 /* Define to best printf format archetype, usually gnu_printf if available. */
 #define PG_PRINTF_ATTRIBUTE gnu_printf
 
 /* Define to 1 to use <stdbool.h> to define type bool. */
 #define PG_USE_STDBOOL 1
-
-/* PostgreSQL version as a string */
-#define PG_VERSION "16.0"
-
-/* PostgreSQL version as a number */
-#define PG_VERSION_NUM 160000
-
-/* A string containing the version number, platform, and C compiler */
-#define PG_VERSION_STR "PostgreSQL 18.0"
 
 /* RELSEG_SIZE is the maximum number of blocks allowed in one disk file. Thus,
    the maximum size of a single file is RELSEG_SIZE * BLCKSZ; relations bigger
@@ -259,10 +241,6 @@
 
 /* Define to the appropriate printf length modifier for 64-bit ints. */
 #define INT64_MODIFIER "l"
-
-#if defined _WIN32
-#define HAVE_INET_ATON 1
-#endif
 
 #if defined _WIN32
 #define HAVE_DECL_STRNLEN 1

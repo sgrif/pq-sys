@@ -9,7 +9,7 @@ apt update
 apt install -y binutils xz-utils curl libclang-dev gcc mingw-w64 gcc-i686-linux-gnu clang gcc-arm-linux-gnueabi libpq-dev
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- --profile minimal -y -c rustfmt
 . "/root/.cargo/env"
-cargo install bindgen-cli@0.72.0
+cargo install bindgen-cli@0.73.2
 
 function bindgen_common() {
     bindgen --allowlist-function "PQ.*" \

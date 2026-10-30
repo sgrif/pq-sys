@@ -191,3 +191,65 @@ jobs:
         run: |
           cd pq-src
           cargo publish --dry-run --no-default-features
+
+  cross_compile_windows:
+    name: Cross compile (Linux -> ${{ matrix.target }}, cargo-xwin)
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [x86_64-pc-windows-msvc, aarch64-pc-windows-msvc]
+    runs-on: ubuntu-latest
+    env:
+      RUSTFLAGS: "-D warnings"
+      TARGET: ${{ matrix.target }}
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+          submodules: recursive
+      - name: Cache cargo registry
+        uses: Swatinem/rust-cache@f51f967e158417aafa338a1e46ab22095f07aa01 # v2.8.2
+        with:
+          key: xwin-${{ matrix.target }}-cargo-${{ hashFiles('**/Cargo.toml') }}
+
+      - name: Install clang-cl, lld-link and llvm-lib
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang lld llvm
+
+      - name: Install rust toolchain
+        run: |
+          rustup update stable
+          rustup override set stable
+          rustup target add "$TARGET"
+
+      - name: Install cargo-xwin
+        uses: taiki-e/install-action@1168f6810a3cb30a3514bf5756a3b7f0422c6df8 # v2.87.28
+        with:
+          tool: cargo-xwin
+
+      # OpenSSL support is disabled for now as cross compiling it
+      # requires an upstream patch that is not released yet
+      - name: Build pq-src
+        run: |
+          cargo xwin build -p pq-src --no-default-features --target "$TARGET"
+
+      - name: Build pq-sys
+        run: |
+          cargo xwin build --no-default-features --features bundled_without_openssl --target "$TARGET"
+
+      - name: Test compile diesel
+        run: |
+          cargo new test_diesel
+          cd test_diesel
+          echo "[workspace]" >> Cargo.toml
+          cargo add diesel --no-default-features --features "postgres" --git "https://github.com/diesel-rs/diesel" --branch main
+          cargo add pq-sys
+          echo "[patch.crates-io]" >> Cargo.toml
+          echo "pq-sys = { path = \"..\" }" >> Cargo.toml
+          cat Cargo.toml
+          echo "use diesel::prelude::*;" > src/main.rs
+          echo "fn main() { PgConnection::establish(\"foo\").unwrap(); }" >> src/main.rs
+          cargo xwin build --features "pq-sys/bundled_without_openssl" --target "$TARGET"
+          test -f "target/$TARGET/debug/test_diesel.exe"

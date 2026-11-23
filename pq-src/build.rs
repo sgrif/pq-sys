@@ -272,6 +272,7 @@ fn main() {
     basic_build
         .define("FRONTEND", None)
         .warnings(false)
+        .std("c11")
         .includes(includes);
 
     if env::var("CARGO_FEATURE_WITH_ASAN").is_ok() {

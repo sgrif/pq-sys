@@ -5,6 +5,14 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+### pq-sys [0.7.9] 2026-11-24
+
+* Update bindings for postgres 19
+
+### pq-src [0.3.14] 2026-11-24
+
+* Update the bundled version of libpq to 19.0
+
 ### pq-sys [0.7.8] 2026-10-30
 
 * Updated bindgen to 0.73.2 and regenerate bindings

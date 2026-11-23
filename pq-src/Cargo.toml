@@ -1,6 +1,6 @@
 [package]
 name = "pq-src"
-version = "0.3.14+libpq-18.6"
+version = "0.3.14+libpq-19.0"
 edition = "2021"
 include = [
         "src/**/*.rs",
@@ -195,6 +195,8 @@ include = [
         "source/src/include/common/oauth-common.h",
         "source/src/interfaces/libpq/fe-auth-oauth.h",
         "source/src/interfaces/libpq/fe-auth-oauth.c",
+        "source/src/interfaces/libpq/oauth-debug.h",
+        "source/src/include/utils/memdebug.h",
 ]
 description = "Bundled version of libpq"
 license = "PostgreSQL"

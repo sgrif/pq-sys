@@ -31,6 +31,8 @@ pub const LIBPQ_HAS_SEND_PIPELINE_SYNC: u32 = 1;
 pub const LIBPQ_HAS_SOCKET_POLL: u32 = 1;
 pub const LIBPQ_HAS_FULL_PROTOCOL_VERSION: u32 = 1;
 pub const LIBPQ_HAS_PROMPT_OAUTH_DEVICE: u32 = 1;
+pub const LIBPQ_HAS_GET_THREAD_LOCK: u32 = 1;
+pub const LIBPQ_HAS_OAUTH_BEARER_TOKEN_V2: u32 = 1;
 pub const PG_COPYRES_ATTRS: u32 = 1;
 pub const PG_COPYRES_TUPLES: u32 = 2;
 pub const PG_COPYRES_EVENTS: u32 = 4;
@@ -131,6 +133,7 @@ pub enum PGpipelineStatus {
 pub enum PGauthData {
     PQAUTHDATA_PROMPT_OAUTH_DEVICE = 0,
     PQAUTHDATA_OAUTH_BEARER_TOKEN = 1,
+    PQAUTHDATA_OAUTH_BEARER_TOKEN_V2 = 2,
 }
 #[repr(C)]
 #[derive(Debug)]
@@ -549,6 +552,9 @@ pub type pgthreadlock_t =
     ::std::option::Option<unsafe extern "C" fn(acquire: ::std::os::raw::c_int)>;
 unsafe extern "C" {
     pub fn PQregisterThreadLock(newhandler: pgthreadlock_t) -> pgthreadlock_t;
+}
+unsafe extern "C" {
+    pub fn PQgetThreadLock() -> pgthreadlock_t;
 }
 unsafe extern "C" {
     pub fn PQtrace(conn: *mut PGconn, debug_port: *mut FILE);
@@ -1189,6 +1195,25 @@ const _: () = {
         [::std::mem::offset_of!(PGoauthBearerRequest, token) - 16usize];
     ["Offset of field: PGoauthBearerRequest::user"]
         [::std::mem::offset_of!(PGoauthBearerRequest, user) - 20usize];
+};
+#[repr(C)]
+#[derive(Debug, Copy, Clone)]
+pub struct PGoauthBearerRequestV2 {
+    pub v1: PGoauthBearerRequest,
+    pub issuer: *const ::std::os::raw::c_char,
+    pub error: *const ::std::os::raw::c_char,
+}
+#[allow(clippy::unnecessary_operation, clippy::identity_op)]
+const _: () = {
+    ["Size of PGoauthBearerRequestV2"][::std::mem::size_of::<PGoauthBearerRequestV2>() - 32usize];
+    ["Alignment of PGoauthBearerRequestV2"]
+        [::std::mem::align_of::<PGoauthBearerRequestV2>() - 4usize];
+    ["Offset of field: PGoauthBearerRequestV2::v1"]
+        [::std::mem::offset_of!(PGoauthBearerRequestV2, v1) - 0usize];
+    ["Offset of field: PGoauthBearerRequestV2::issuer"]
+        [::std::mem::offset_of!(PGoauthBearerRequestV2, issuer) - 24usize];
+    ["Offset of field: PGoauthBearerRequestV2::error"]
+        [::std::mem::offset_of!(PGoauthBearerRequestV2, error) - 28usize];
 };
 unsafe extern "C" {
     pub fn PQencryptPassword(

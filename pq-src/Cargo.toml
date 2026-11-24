@@ -1,6 +1,6 @@
 [package]
 name = "pq-src"
-version = "0.3.14+libpq-19.0"
+version = "0.3.15+libpq-19.0"
 edition = "2021"
 include = [
         "src/**/*.rs",

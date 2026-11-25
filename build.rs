@@ -188,7 +188,7 @@ fn configured_by_vcpkg() -> bool {
 }
 
 fn check_and_use_lib_dir(var_name: &str) -> Result<String, env::VarError> {
-    println!("cargo:rerun-if-env-changed={:?}", var_name);
+    println!("cargo:rerun-if-env-changed={}", var_name);
     println!("{:?} = {:?}", var_name, env::var(var_name));
 
     let pq_lib_dir = env::var(var_name);

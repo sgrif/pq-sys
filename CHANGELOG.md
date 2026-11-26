@@ -5,6 +5,8 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 
 ## Unreleased
 
+* Rerun the build script when `PQ_LIB_DIR` or `PQ_LIB_DIR_<TARGET>` changes
+
 ### pq-sys [0.7.9] 2026-11-24
 
 * Update bindings for postgres 19
